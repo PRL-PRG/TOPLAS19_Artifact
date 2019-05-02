@@ -1,0 +1,719 @@
+---
+title: A Large Scale Study of Programming Languages and Code Quality in Github --- Repetition
+output: html_document
+---
+
+
+Initially we load the implementation and initialize the environment making sure that all outputs of this script will be stored in `artifact/repetition` subfolder:
+
+```{r}
+# load the file containing the actual implementation details
+knitr::opts_chunk$set(echo = FALSE)
+source("implementation.R")
+initializeEnvironment("./artifact/repetition")
+```
+
+# Data collection (chapter 2.2 of the FSE manuscript)
+
+We staert with data acquisition. The artifact obtained from the original authors contained two CSV files. The file `everything` contains one row per unique commit and filename pair. The file `newSha` contains one row per unique commit and language pair. Thus, one row of `newSha` summarizes one or more rows of `everything`. By looking at the code of the artifact we have determined that the contents of the `newSha` file was used for the analysis.
+
+```{r, cache=TRUE, warning=FALSE, echo=FALSE, message=FALSE, error=FALSE, results='hide'}
+everything <- loadEverything()
+newSha <- loadNewSha()
+```
+
+## Number of projects analyzed
+
+The study claims that `729` projects were used and that each one of them had more than 27 commits in any language used:
+
+```{r}
+newSha_project_names = sort(unique(newSha$project))
+number_of_projects <- length(newSha_project_names)
+check(number_of_projects==729) 
+projects_with_too_few_commits = newSha %>% group_by(project, language) %>% dplyr::summarize(n = n()) %>% filter(n <= 27)
+check(nrow(projects_with_too_few_commits) == 0)
+```
+
+Let's see how many projects are there in `everything`:
+
+```{r}
+# There are projects in the larger file that are missing from the smaller file, with no explanation in the paper
+everything_project_names <-  sort(unique(everything$project))
+assert_that(length(everything_project_names)==877)
+# some projects are not used in the paper
+projects_not_in_paper    <-  setdiff(everything_project_names, newSha_project_names)
+number_of_projects_not_included <- length(projects_not_in_paper)
+check(number_of_projects_not_included == 148)
+# some commits are not used
+everything %>% filter(project %in% projects_not_in_paper) -> everything_unused
+# and the rest is used
+everything %>% filter( project %in% newSha_project_names)  -> everything_used
+assert_that(nrow(everything_used)==4956282)
+```
+
+Ok, that's more, check if the discrepancy is explained by too few commits for the missing projects:
+
+```{r} 
+number_of_large_projects_not_included <- nrow(everything %>% dplyr::filter(project %in% projects_not_in_paper) %>%  group_by(project,tag) %>% dplyr::summarize (n=n()) %>% filter(n>27))
+check(number_of_large_projects_not_included == 101)
+out("numberOfProjectsIncluded", number_of_projects )
+out("numberOfProjectsNotIncluded", number_of_projects_not_included)
+out("numberOfLargeProjectsNotIncluded", number_of_large_projects_not_included)
+```
+
+We found data for `148` projects that have been ignored in the study. Although the study filtered out projects with fewer than 28 commits, 101 of the ignored projects have 28 commits or more.
+
+## Sizes of the code analyzed
+
+The study claims that `63M` SLOC were analyzed and uses the difference betweeen insertions and deletions as reported by git to calculate this. Although this metric is not precise, we follow with it:
+
+```{r}
+sloc <- sum(newSha$insertion) - sum(newSha$deletion)
+sloc_mio <- round(sloc / 1000000, 1)
+check(sloc_mio == 63) # what the paper claims
+out("slocMio", sloc_mio)
+check(sloc_mio == 80.7)
+```
+
+In fact, there are There are 80.7 mio lines of code
+
+## Claim: `29K authors`
+
+```{r}
+number_authors <- length(unique(everything_used$author))
+check(number_authors / 1000 == 29) # what the paper says
+check(number_authors == 47297)
+number_committers <- length(unique(everything_used$committer))
+check(number_committers == 29082)
+out("numberCommitters", round(number_committers/1000, 0))
+out("numberAuthors", round(number_authors/1000, 0))
+
+everything %>% filter(committer == "Linus Torvalds") -> lt
+everything %>% filter(author == "Linus Torvalds") -> lt2
+out("linusCommitter", nrow(lt))
+out("linusAuthor", nrow(lt2))
+```
+
+There are `29K` committers, but the study is interested in active developers and not just people with commit rights. There are `47K` developers.
+
+## Claim:  `1.5M commits`
+
+```{r}
+number_of_commits <- length(unique(newSha$sha))
+check(number_of_commits == 1478609)
+out("numberCommitsMio", round(number_of_commits/1000/1000,1))
+```
+
+There are 1.5m commits.
+
+## Claim: `17 languages`
+
+```{r}
+number_of_languages = length(unique(newSha$language))
+check(number_of_languages == 17)
+```
+
+The authors have indeed operated with `17` languages. 
+
+## Project-Language pairs with fewer than 20 commits are ignored 
+
+The authors claim that they have excluded project-language pairs for which there was fewer than 20 commits in project. Let's see if there are any such pairs in `newSha`:
+
+```{r}
+newSha %>% group_by(project, language) %>% dplyr::summarize(n=n()) %>% filter(n < 20) -> too_small_to_keep
+check(nrow(too_small_to_keep) == 0)
+```
+
+There are none, so the data has already been cleaned. 
+
+## Claim: 564,625 buggy commits.
+
+```{r}
+newSha %>% filter(isbug == 1) -> bugFixes
+numberOfBugFixes <-  length(unique(bugFixes$sha))
+check(numberOfBugFixes == 530777)
+out("numberOfBugFixes", numberOfBugFixes)
+```
+
+The number of bug fixes is close but not quite matching. We have about `30K` fewer.
+
+## `everything` to `newSha` summary
+
+Let's now summarize `everything` which contains only the projects used in `newSha` to check for any further discrepancies wrt `newSha`. First we only select the columns we will need and convert discrete data into factors to limit memory footprint and speedup execution: 
+
+```{r}
+# The data frames have redundancy. Delete columns we can derive and remove columns we don't use. Turn character columns into factors.
+everything %>% dplyr::select(tag,         # language assigned by authors
+                           author,             # name of author
+                           committer,          # name of committer (not same as author)
+                           commit_date,        # when was the commit made
+                           commit_age,         # ???
+                           insertion,          # number of lines inserted
+                           deletion,           # number of lines deleted
+                           sha,                # commit id
+                           project,            # project name
+                           file_name,           # commit filename
+                           domain,
+                           isbug
+                          )  -> everything_clean
+
+# turn discrete data into factors  
+everything_clean %>% mutate(language = as.factor(tag),
+                               committer = as.factor(committer),
+                               project = as.factor(project)
+                               ) -> everything_clean
+```
+
+Next, there are some redundancies in `everything`, such as rows that differ in `github_languag` column, but describe the same file (we found `23210` such rows). Since we are not interested in the `github_language` column any more, we can simply ignore such redundancies:
+
+```{r}
+# We remove keep only one row per unique columns we are interested in
+everything_clean %>% distinct(sha,file_name, project,.keep_all=TRUE)  -> everything_clean
+```
+
+To ease our life down the road, we also rename the languages factor to use same names as does the `newSha` version, and order the factor in alphabetical order for better visualization: 
+
+```{r}
+# sanity: use the same labels as in newSha
+everything_clean$language <-  
+  revalue(everything_clean$language, c( "c"="C",
+                                        "clojure"="Clojure",
+                                        "coffeescript"="Coffeescript",
+                                        "cpp"="C++","csharp"="C#",
+                                        "erlang"="Erlang",
+                                        "go"="Go",
+                                        "haskell"="Haskell",
+                                        "java"="Java",
+                                        "javascript"="Javascript",
+                                        "objc"="Objective-C",
+                                        "perl"="Perl",
+                                        "php"="Php",
+                                        "python"="Python",
+                                        "ruby"="Ruby",
+                                        "scala"="Scala",
+                                        "typescript"="Typescript"))
+
+# sanity: levels in alphabetical order
+everything_clean$language <- 
+    factor(everything_clean$language, levels=sort(levels(everything_clean$language)))
+```
+
+Finally, let's summarize `everything_clean` per language: 
+
+```{r}
+checkSha = everything_clean %>% 
+    dplyr::select(-(file_name)) %>% 
+    group_by(sha) %>% 
+    mutate(files = n()) %>% 
+    distinct(sha, .keep_all = T) %>% 
+    dplyr::select(language, project, sha, files, committer, author, commit_age, insertion, deletion, isbug, domain)
+```
+
+Let's see the number of unique commits found in `newSha` and the version constructed from `everything`:
+
+```{r}
+newSha_distinct = unique(newSha$sha) 
+checkSha_distinct = unique(checkSha$sha) 
+in_both = intersect(newSha_distinct, checkSha_distinct)
+out("notInNewShaRaw", length(checkSha_distinct) - length(in_both))
+out("notInEverythingRaw", length(newSha_distinct) - length(in_both))
+```
+
+This is promising, what we can do now is basically use `author` field from checked and append it to `newSha` which lacks the author (the original paper used committers instead as we discovered above). 
+
+```{r}
+stuff = checkSha %>% dplyr::select(sha, author)
+newSha = inner_join(newSha, stuff, "sha")
+```
+
+Now in order to properly compare `newSha` and its version we obtained from `everything` we should remove from it any project-language pairs that have fewer than 20 commits:
+
+```{r}
+checkSha = checkSha %>%
+    group_by(project, language) %>%
+    mutate(n = n()) %>%
+    filter(n >= 20) %>%
+    dplyr::select(-(n));
+```
+
+And redo the verification that it contains everything `newSha` does:
+
+```{r}
+newSha_distinct = unique(newSha$sha) 
+checkSha_distinct = unique(checkSha$sha) 
+in_both = intersect(newSha_distinct, checkSha_distinct)
+out("notInNewSha", length(checkSha_distinct) - length(in_both))
+out("notInEverything", length(newSha_distinct) - length(in_both))
+```
+
+OUCH. So there are now commits that are in `newSha`, but are *not* in `everything` summarized. Furthermore, we should be comparing based on projects + commits since a commit may be shared with more projects:
+
+```{r}
+newSha_distinct = unique(paste0(newSha$project, newSha$sha))
+checkSha_distinct = unique(paste0(checkSha$project, checkSha$sha)) 
+in_both = intersect(newSha_distinct, checkSha_distinct)
+out("notInNewShaWithProject", length(checkSha_distinct) - length(in_both))
+out("notInEverythingWithProject", length(newSha_distinct) - length(in_both))
+```
+
+OUCH^2. It would seem there is *lot* of duplication in `newSha` that is not present in `everything`. Spoiler alert: More on duplication in `newSha` in the reproduction section. 
+
+As last thing in the data collection section, let us give `newSha` the same treatment we gave to `everything`, i.e. add factors, remove unused columns, etc. 
+
+```{r,cache=TRUE,warning=FALSE,echo=FALSE,message=FALSE}
+
+# newSha also has redundancies
+newSha %>% dplyr::select(language,
+                  typeclass,
+                  langclass, 
+                  memoryclass,
+                  compileclass,
+                  project,
+                  sha,
+                  files,
+                  committer,
+                  author,
+                  commit_age,
+                  commit_date,
+                  insertion,
+                  deletion,
+                  isbug,
+                  #bug_type,
+                  domain,
+                  btype1,
+                  btype2
+                ) %>%
+            mutate(language = as.factor(language),
+                   typeclass = as.factor(typeclass),
+                   langclass = as.factor(langclass),
+                   memoryclass = as.factor(memoryclass),
+                   compileclass = as.factor(compileclass),
+                   project = as.factor(project),
+                   #committer = as.factor(committer),
+                   #bug_type = as.factor(bug_type),
+                   domain = as.factor(domain)
+            ) -> newSha
+
+# sanity: levels in alphabetical order
+newSha$language <- 
+    factor(newSha$language, levels=sort(levels(newSha$language)))
+```
+
+# Categorizing Languages (section 2.3)
+
+While we did not have the code that categorizes the languages into groups, the classes are well described in the paper and the classification data is available in the `newSha` file. As a first step we thus verify that the categorization in `newSha` conforms to the categories explained in the paper. First, we bring the class format to single column compatible with what we use further down the study.
+
+We reclassify `hybrid` memory model languages (Objective-C) to `Unmanaged`, which is what the paper later suggests (the claim is that while Objective-C can use both, unmanaged is the default case). 
+
+```{r}
+
+newSha$typeclass = revalue(newSha$typeclass, c("strong" = "Str", "weak" = "Wea"))
+newSha$langclass = revalue(newSha$langclass, c("functional" = "Fun", "proc" = "Pro", "script" = "Scr"))
+newSha$memoryclass = revalue(newSha$memoryclass, c("unmanaged" = "Unm", "managed" = "Man", "hybrid" = "Unm"))
+newSha$compileclass = revalue(newSha$compileclass, c("dynamic" = "Dyn", "static" = "Sta"))
+
+newSha$combinedOriginal = paste(newSha$langclass, newSha$compileclass, newSha$typeclass, newSha$memoryclass)
+```
+
+Now, classify the languages according to the classification as described in the FSE paper:
+
+```{r}
+newSha$combined = classifyLanguageAsOriginal(newSha$language)
+```
+
+Make sure that the original and our recreated classification is identical:
+
+```{r}
+check(identical(newSha$combinedOriginal, newSha$combined))
+```
+
+So no errors in this section. Let's remove `combine` column:
+
+```{r}
+newSha = newSha %>% dplyr::select(-(combined))
+```
+
+Next, the paper actually ignores TypeScript from the language category analysis saying that TypeScript does not properly fit into the categories, so we assign a special category (`Other`) to it so that we can easily remove it later. Finally, we convert the `combinedOriginal` column into a factor. 
+
+```{r}
+newSha$combinedOriginal[newSha$language == "Typescript"] = "Other"
+newSha = newSha %>% mutate(combinedOriginal = as.factor(combinedOriginal))
+```
+
+## Better Language Classification
+
+Although the language categorization in the data is same as in the paper (modulo the hybrid memory class for Objective-C and categories given for Typescript), it is wrong. We have both reclassified the obvious mistakes and marked two other languages, that do not properly fit the categories (Scala and Objective-C). Furthermore we categorize Typescript as scripting, dynamic, weak and managed, since it fully conforms to this category:
+
+Category                          | Per Paper                      | Per Reality
+----------------------------------|--------------------------------|-------------
+Functional-Static-Strong-Managed  | haskell scala                  | haskell                
+Functional-Dynamic-Strong-Managed | clojure erlang                 | (empty)
+Proc-Static-Strong-Managed        | java go cs                     | java go c#
+Proc-Static-Weak-UnManaged        | c cpp                          | C C++
+Script-Dynamic-Weak-Managed       | coffee js perl php             | Python Perl Ruby JavaScript Php CoffeeScript Typescript
+Script-Dynamic-Strong-Managed     | python ruby                    | (empty)
+Functional-dynamic-weak-managed   | (empty)                        | clojure erlang
+Other                             | Typescript                     | Scala Objective-C
+
+```{r}
+newSha$combinedCorrected = as.factor(classifyLanguageCorrected(newSha$language))
+```
+
+# Identifying Project Domain (2.4)
+
+The artifact available to us does not contain the code for the identification and the paper does not specify it in detail enough for us to repeat it from scratch. The data however contain the `domain` column which corresponds to the domain associated in this section. We will use this in subsequent analysis. 
+
+# Categorizing Bugs (2.5)
+
+The artifact again did not contain any code towards this goal, nor did we find the results of such categorization anywhere in the data. We will revisit this in RQ4. 
+
+# Saving the processed data
+
+This is not actual part of the repetition, but we save the `newSha` and `checkSha` for future use:
+
+```{r}
+write.csv(newSha, paste0(WORKING_DIR, "/Data/newSha.csv"))
+write.csv(checkSha, paste0(WORKING_DIR, "/Data/checkSha.csv"))
+```
+
+# Are some languages more defect prone than others? (chapter 3, RQ 1)
+
+Get the data, summarize the commits information per project & language and log transform according to the paper (in the code we have obtained log10 and log are used for different rows of the model)
+
+```{r}
+newSha$combined = newSha$combinedOriginal
+newSha$devs = newSha$committer
+X = summarizeByLanguage(newSha)
+Y = logTransform(X, log10, log)
+```
+
+## Fit the Negative Binomial Regression
+
+The Negative Binomial model is fit on the original scale of bcommits. However, the predictors were log-transformed to avoid influential observations (as was in the study). First verify the weighted contrasts to conform to the original: 
+
+
+```{r}
+contr.Weights(Y$language)
+```
+
+We see diagonal with ones and the last line (Typescript) contains the weighted contrasts, this looks good. 
+
+Let's fit the model, and then the releveled model to get the parameter for the last language:
+
+```{r}
+nbfit = glm.nb(bcommits~lmax_commit_age+ltins+ldevs+lcommits+language, contrasts = list(language = contr.Weights(Y$language)), data=Y)
+nbfit_r = glm.nb(bcommits~lmax_commit_age+ltins+ldevs+lcommits+language_r, contrasts = list(language_r = contr.Weights(Y$language_r)), data=Y)
+# combine them into single result table
+result = combineModels(nbfit, nbfit_r, Y$language)
+result
+```
+
+Let's now juxtapose this to the FSE paper's results. The `ok` column contains `TRUE` if there was a claim in the original with a significance and we support that claim at the same significance level, `FALSE` if there was a claim and we do not support it, or support it at worse significance, and `NA` if there was no claim in the original to begin with. 
+
+```{r}
+juxt = merge(result, baselineFSE_RQ1(), by = 0, all = T, sort = F)
+juxt$ok = checkPValues(juxt, "FSE_pv", "pVal")
+juxt
+```
+
+Outside of the control variables, the only value we were not able to repeat is PHP. We believe this is a simple typo in the original paper (the authors themselves have noticed this in the CACM reprint of the paper), so we have created updated baseline:
+
+```{r}
+juxt = merge(result, baselineFSE_RQ1_fixed(), by = 0, all = T, sort = F)
+juxt$ok = checkPValues(juxt, "FSE_pv", "pVal")
+juxt
+```
+
+Better. We were able to repeat the RQ1 convincingly. 
+
+## Deviance Analysis
+
+The authors also display numbers for deviance analysis. They find that log commits is the single most contributing factor, with second most important being the languages at less than 1%:
+
+```{r}
+anova(nbfit)
+```
+
+Well, this looks different indeed. This is because we have different order of the control varibles and `anova` checks type-I tests so order matters. If we change the order to correspond to the original manuscript, we can replicate:
+
+```{r}
+nbfit_order_fixed = glm.nb(bcommits~lcommits+lmax_commit_age+ltins+ldevs+language, contrasts = list(language = contr.Weights(Y$language)), data=Y)
+anova(nbfit_order_fixed)
+```
+
+However, proper way would be to use `Anova` function which is order independent as it does type-II tests:
+
+```{r}
+Anova(nbfit)
+```
+
+# Which Language Properties Relate to Defects (chapter 3, RQ 2)
+
+First, let's drop Typescript, which now belongs to the `Other` category since we are not interested in it:
+
+```{r}
+newSha$combined = newSha$combinedOriginal
+newSha$devs = newSha$committer
+X = summarizeByLanguage(newSha)
+Y = logTransform(X, log10, log)
+Y = Y %>% filter(combined != "Other")
+Y = droplevels(Y)
+```
+
+Let's check the weights first, as we did in RQ1:
+
+```{r}
+contr.Weights(Y$combined)
+```
+
+Fit the model, similarly to RQ1:
+
+```{r}
+nbfit = glm.nb(bcommits~lmax_commit_age+ltins+ldevs+lcommits+combined, contrasts = list(combined = contr.Weights(Y$combined)), data=Y)
+nbfit_r = glm.nb(bcommits~lmax_commit_age+ltins+ldevs+lcommits+combined_r, contrasts = list(combined_r = contr.Weights(Y$combined_r)), data=Y)
+# combine them into single result table
+result = combineModels(nbfit, nbfit_r, Y$combined)
+result
+```
+
+And let's juxtapose this against the original FSE paper:
+
+```{r}
+juxt = merge(result, baselineFSE_RQ2(), by = 0, all = T, sort = F)
+juxt$ok = checkPValues(juxt, "FSE_pv", "pVal")
+juxt
+```
+
+Using the original classification, we can repeat the RQ2 results properly. The only difference is the large coefficient we see in commits. This is because apparently this time the FSE paper used natural logarithms everywhere, so we try that too: 
+
+Now let's look if this changes when we use the updated classification:
+
+```{r}
+newSha$combined = newSha$combinedCorrected
+Xcor = summarizeByLanguage(newSha)
+Ycor = logTransform(Xcor, log, log)
+Ycor = Ycor %>% filter(combined != "Other")
+Ycor = droplevels(Ycor)
+nbfit = glm.nb(bcommits~lmax_commit_age+ltins+ldevs+lcommits+combined, contrasts = list(combined = contr.Weights(Ycor$combined)), data=Ycor)
+nbfit_r = glm.nb(bcommits~lmax_commit_age+ltins+ldevs+lcommits+combined_r, contrasts = list(combined_r = contr.Weights(Ycor$combined_r)), data=Ycor)
+# combine them into single result table
+resultReclassified = combineModels(nbfit, nbfit_r, Ycor$combined)
+juxt = merge(resultReclassified, baselineFSE_RQ2(), by = 0, all = T, sort = F)
+juxt$ok = checkPValues(juxt, "FSE_pv", "pVal")
+juxt
+
+```
+
+We can observe that the log commits coefficient now corresponds to the original value due to the log change. Furthermore we see that the `Pro Sta Str Man` and `Scr Dyn Wea Man` categories are no longer significant and we cannot say anything about the  `Fun Dyn Str Man` category since there are no such languages (but these almost exclusively went to `Fun Dyn Wea Man`, which is signifcant under the reclassification). 
+
+To summarize, we were able to replicate RQ2 properly. However, if we correct the errors in language classification into categories, the claims are much weaker - notably procedural managed languages and scripting languages are no longer significantly more likely to contain bugs.
+
+Finally, create the table we will use in the paper:
+
+```{r}
+output_RQ2_table(result, resultReclassified)
+```
+
+# Does Language Defect Proneness Depend on Domain (chapter 3, RQ3)
+
+The artifact we obtained contained no code to answer this question, so will attempt to figure the code out ourselves. 
+
+Let's try to recreate the heatmaps from RQ3 original paper. First prepare the data:
+
+```{r}
+langs = length(unique(Y$language))
+domains = length(unique(Y$domain))
+
+ratio = matrix(0, langs, domains)
+projects = matrix(0, langs, domains)
+commits = matrix(0, langs, domains)
+bcommits = matrix(0, langs, domains)
+
+for (i in 1:nrow(Y)) {
+    r = Y[i,]
+    langIndex = as.numeric(r$language)
+    domainIndex = as.numeric(r$domain)
+    projects[langIndex, domainIndex] = projects[langIndex, domainIndex] + 1
+    commits[langIndex, domainIndex] = commits[langIndex, domainIndex] + r$commits
+    bcommits[langIndex, domainIndex] = bcommits[langIndex, domainIndex] + r$bcommits
+}
+
+ratio = bcommits / commits
+```
+
+Now do the heatmap:
+
+```{r}
+heatmap.2(ratio, dendrogram = "none", cellnote = round(ratio,2), trace = "none", labRow = levels(Y$language), labCol = levels(Y$domain), Rowv = NA, Colv = NA, notecol = "red", col = gray(256:0 / 256 ))
+```
+
+Visual comparison, since this is all we have because no read data on the heatmaps was in the artifact either does confirm that this is very similar to the first heatmap in RQ3 of the original paper. After that the paper argues that outliers needed to be removed, where outliers are projects with bug densities below 10th percentile and above 90th percentile. We therefore remove these and create the second heatmap, first creating the data in the same way as before:
+
+```{r}
+ratioVect = Y$bcommits / Y$commits
+q10 = quantile(ratioVect, 0.1)
+q90 = quantile(ratioVect, 0.9)
+Y__ = Y[(ratioVect > q10) & (ratioVect < q90),]
+
+ratio_ = matrix(0, langs, domains)
+projects_ = matrix(0, langs, domains)
+commits_ = matrix(0, langs, domains)
+bcommits_ = matrix(0, langs, domains)
+
+for (i in 1:nrow(Y__)) {
+    r = Y__[i,]
+    rr = r$bcommits / r$commits 
+    langIndex = as.numeric(r$language)
+    domainIndex = as.numeric(r$domain)
+    projects_[langIndex, domainIndex] = projects[langIndex, domainIndex] + 1
+    commits_[langIndex, domainIndex] = commits[langIndex, domainIndex] + r$commits
+    bcommits_[langIndex, domainIndex] = bcommits[langIndex, domainIndex] + r$bcommits
+}
+
+ratio_ = bcommits_ / commits_
+```
+
+How much data did we shed? 
+
+```{r}
+cat(paste("Records:          ", round(100 - nrow(Y__) / nrow(Y) * 100, 2), "%\n"))
+cat(paste("Buggy commits:    ", round(100 - sum(Y__$bcommits) / sum(Y$bcommits) * 100, 2), "%\n"))
+cat(paste("Commits:          ", round(100 - sum(Y__$commits) / sum(Y$commits) * 100, 2), "%\n"))
+```
+Ok, that is kind of substantial. But that happens when you go 0.1 and 0.9%, should be ~ 20% of the data. 
+
+The heatmap:
+
+```{r}
+heatmap.2(ratio_, dendrogram = "none", cellnote = round(ratio_,2), trace = "none", labRow = levels(Y__$language), labCol = levels(Y__$domain), Rowv = NA, Colv = NA, notecol = "red", col = gray(256:0 / 256 ))
+```
+So, this is different to me. In the original paper, C is strongest in Code Analyzer, while we see C being strongest in Database. Also Perl is very strong in Database, but we see no such thing in the paper. 
+
+Note: The paper ignores the other category and instead shows the overall results, but this has no effect on the actual domains. 
+
+Frustrated by the fact that we cannot replicate the second heatmap, we were thinking if there are other means by which we can support or deny the claims of the original RQ3. This claim is that there is no general relationship between domain and language defect proness. To demonstrate this, we can try the glm from RQ1 and RQ2, but this time see domains. If we do not find significant correlation, then since we have found significant correlation for languages already, it would follow that domains have no general effect. 
+
+Let's first summarize the data again:
+
+```{r}
+newSha$combined = newSha$combinedCorrected
+newSha$devs = newSha$committer
+X = summarizeByLanguage(newSha)
+Y = logTransform(X, log, log)
+# discard the other domain
+Y = Y %>% filter(domain != "Other")
+Y = droplevels(Y)
+```
+
+And fit the model, this time showing the domain instead of languages or language categories. However, we do two extra things - we change the contrasts to zero sum contrasts, which makes more sense, and we adjust for multiple hypothesis using the Bonferroni method - see re-analysis.Rmd or the paper for more details on why. 
+
+```{r}
+nbfit = glm.nb(bcommits~lmax_commit_age+ltins+ldevs+lcommits+domain, contrasts = list(domain = "contr.sum"), data=Y)
+nbfit_r = glm.nb(bcommits~lmax_commit_age+ltins+ldevs+lcommits+domain_r, contrasts = list(domain_r = "contr.sum"), data=Y)
+# combine them into single result table
+result = combineModels(nbfit, nbfit_r, Y$domain, pValAdjust = "bonferroni")
+result
+```
+
+Looking at the results above, none of the domains is significant at level `0.01` so we can say that our tests supports the claim made by the original authors and move to the last RQ. But before doing just that, we should generate a lateX table from our result since this table goes into the paper:
+
+```{r}
+output_RQ3_table(result)
+```
+
+# What is the relation between language and bug category? (chapter 3, RQ4)
+
+There was no column in the dataset with the same bug type labels in Table 5 in the paper. Our closest approximation to the authors' bug categories classifies the commits with Algo, Concurrency, Memory, and Programming in btype1 with those respective labels; it classifies the commits with Security, Performance, and Failure from btype2; and it classifies commits as Other according to whether they are labeled as such in btype1 and btype2. 
+
+```{r}
+
+btype_list <- mapply(c, newSha$btype1, newSha$btype2, SIMPLIFY=F)
+
+nb_fun <- function(l) {
+  !("NB" %in% l)
+}
+
+btype_justbugs <- Filter(nb_fun, btype_list)
+numjustbugs    <- length(btype_justbugs)
+check(numjustbugs == 559186)
+
+# Make sure btype1 != btype2
+# This will rule out list("Other", "Other")
+different_btypes <- function(l) {
+  length(unique(l)) == 2
+}
+
+# rows with one btype listed as "Other" are
+# not overlapping
+other_fun <- function(l) {
+  !("Other" %in% l)
+}
+
+overlap    <- Filter(other_fun, btype_justbugs)
+overlap    <- Filter(different_btypes, overlap)
+numoverlap <- length(overlap)
+check(numoverlap == 7417)
+
+percent_overlap <- round((numoverlap / numjustbugs)*100, digits=2)
+```
+
+It is unclear whether the bug categories are meant to be mutually exclusive--but the sum of their percent counts is 104.44%.
+
+Of the 559186 buggy commits in newSha, 1.33% of them have two different bug categories assigned to them, neither of which is "Other". 
+
+We attempted to recreate the numbers in Table 5 with the unmodified data in newSha.
+
+
+```{r}
+
+T5_bug_type <- c("Algorithm", "Concurrency", "Memory", "Programming", "Security", "Performance", "Failure", "Unknown")
+bugtype_count <- c(606, 11111, 30437, 495013, 11235, 8651, 21079, 5792)
+percent_count <- c(0.11, 1.99, 5.44, 88.53, 2.01, 1.55, 3.77, 1.04)
+# Calculate highest possible value for each category in our data set
+
+btype_algo <- nrow(newSha[newSha$btype1 == "Algo",])
+btype_conc <- nrow(newSha[newSha$btype1 == "Concurrency",])
+btype_mem  <- nrow(newSha[newSha$btype1 == "Memory",])
+btype_prog <- nrow(newSha[newSha$btype1 == "Programming",])
+btype_sec  <- nrow(newSha[newSha$btype2 == "Security",])
+btype_perf <- nrow(newSha[newSha$btype2 == "Performance",])
+btype_fail <- nrow(newSha[newSha$btype2 == "Failure",]) # There is no "FAILURE" category in bug_type
+btype_unknown <- nrow(newSha[newSha$btype1 == "Other" & newSha$btype2 == "Other",])
+
+our_bugtype_count <- c(btype_algo, btype_conc, btype_mem, btype_prog, btype_sec, btype_perf, btype_fail, btype_unknown)
+
+btype_total = sum(newSha$isbug)
+our_percent = round((our_bugtype_count / btype_total)*100, digits=2)
+factordiff = mapply(function(X, Y) { round((Y / X), digits=4) }, bugtype_count, our_bugtype_count)
+countdiff   = mapply(function(X, Y) { Y - X }, bugtype_count, our_bugtype_count)
+
+bugpercenttotal_known <- sum(percent_count[1:7])
+check(bugpercenttotal_known == 103.4)
+bugpercenttotal <- sum(percent_count)
+check(bugpercenttotal == 104.44)
+
+t5_bug_categories <- data.frame(T5_bug_type, btype_count=bugtype_count, percent=percent_count, our_btype_count=our_bugtype_count, our_percent, diff_factor=factordiff, count_difference=countdiff)
+t5_bug_categories
+```
+
+These differences in the composition of the data shared with us versus that reported by the authors make the data incomparable.
+
+```{r}
+remove(WORKING_DIR)
+```
+
+# Summary
+
+We are mostly able to verify the basic data collection steps, although we have found discrepancies in some numbers reported as well as two-way errors in the summarization of the unique project-commit-file data in `everything` and `project-commit-language` in `newSha`, but overall the data in the artifact seem to be reasonably complete to attempt to repeat the analysis. 
+
+We were not able to repeat the project domain and bug category classifications since the artifact contain no code towards these and the description provided in the paper was not detailed enough for us to repeat from scratch. 
+
+The paper had 4 claims, of which:
+
+We were able to completely replicate the first claim (language bug proneness) if we assume the typo in one significance level. We have found minor inconsistencies in the paper which do not have effect on the claim. 
+
+We were able to replicate the second claim (language categories), however we found mistakes in the language classification. When we corrected for them the original claim was only partially valid. 
+
+We were not able to replicate the third claim (language domains) because the data cleaning described in the paper provided not complete description and our data afterward differed significantly from the original. We have however used another method to the same end.
+
+We were not able to replicate the fourth claim (bug categories). Input data to this problem was not available and no detailed description on how to recreate them was available in the artifact or the paper. 

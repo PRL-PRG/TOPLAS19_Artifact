@@ -1,0 +1,129 @@
+---
+title: "Missing Commits"
+output: html_notebook
+---
+
+This separate notebook deals with our analysis of commits not accounted for in the artifact obtained from the original authors. 
+
+```{r}
+# load the file containing the actual implementation details
+knitr::opts_chunk$set(echo = FALSE)
+source("implementation.R")
+initializeEnvironment("./artifact/missing-commits")
+```
+
+Load the data processed by the repetition and summarize them. 
+
+```{r}
+data = read.csv("./artifact/repetition/Data/newSha.csv")
+data$combined = data$combinedOriginal # does not matter
+data$devs = data$committer # does not matter
+data = summarizeByLanguage(data)
+```
+
+First, we download projects. This gets us the projects' metadata, all commits, and all unique files changed in the commits. Out of 728 projects, we downloaded 618 (causes: network failures during download, projects going private, or projects being deleted) and analyzed 513 (node.js, which we used to download the projects, segfaulted on several of them). The commits reported for the study were then analyzed; and for each project, we remember the list of commits used in the study. 
+
+    Total records:     1578165                                                    
+    Total projects:    729                                                        
+    Multi-commits:     46526                                                      
+    Unique commits:    1531639 
+    
+Multi-commits are commits that have multiple languages.  
+
+The downloaded projects were matched. Since the study has project names without repository owners, matches could be ambiguous.  We end up with 423 matched projects. One item, dogecoin, has the same name but two different projects. For each project, we looked at all commits and classified them as:
+
+- valid (i.e. present in the study and in the project)
+- irrelevant (i.e. present in the project, but not relevant to the study since they do not change any file in the studied languages)
+- missing (present in the project, but not in the study, while changing at least one file in studied language)
+- invalid (present in the study, not present in the project) 
+
+This data has been obtained by running the `commits-verifier` tool. 
+
+<!--%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%-->
+<!--%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%-->
+## Results on missing commits
+<!--%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%-->
+<!--%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%-->
+
+
+First some verification and data cleanup -- if we matched a project wrongly, then we would see all invalid commits.
+
+```{r}
+mc = read.csv("./input_data/missing-commits.csv")
+mc %>% filter(invalid > 0) %>% arrange(desc(invalid))
+```
+
+There are four projects with invalid counts larger than 1.  In the case of "framework" and "hw", the numbers are large enough to be worth setting them aside. The case of "generator-mobile", where we have only invalid commits, suggests a badly matched project. We ignore it.  Lastly, "DefenitelyTyped" has 8 mistmatched commits -- but since it is one of the TypeScript projects that contains no code, we can safely ignore it.
+
+```{r}
+mc %>% filter(invalid <= 1) -> missing_commits
+
+valid_sum <- sum(missing_commits$valid)
+check(valid_sum == 426845)
+missing_sum <- sum(missing_commits$missing)
+check(missing_sum == 106411)
+ratio_missing <- round(missing_sum/(missing_sum+valid_sum)*100,2)
+check(ratio_missing == 19.95)
+out("MissingCommitsThousands", round(missing_sum/1000,0))
+out("MissingCommitsRatio", ratio_missing)
+```
+
+In total, we have seen 426k commits in the projects we have cross-checked. There were 106k missing commits (19.95%).
+
+- The number of commits per project is skewed towards very few valid commits
+- Invalid commits are in almost every project, and there are projects that are almost entirely missing
+
+Projects with the highest ratio of missing commits:
+
+```{r}
+missing_commits %>% mutate(ratio = round(missing/(missing+valid)*100,2)) %>% arrange(desc(ratio))
+```
+
+- V8 is high on the list -- the 12th most incomplete project (around 70% of commits are missing).
+
+```{r}
+data %>% group_by(language) %>% summarize(commits = sum(commits)) -> commits_by_lang
+commits_by_lang[commits_by_lang$language == "C", 2] <- commits_by_lang[commits_by_lang$language == "C", 2] +
+                                                        commits_by_lang[commits_by_lang$language == "C++", 2]
+commits_by_lang %>% filter(language != "C++") -> commits_by_lang
+commits_by_lang %>% mutate(missing = 0) -> c
+c$language <- as.character(c$language)
+
+c[c$language == "C", 3] <- sum(missing_commits$cpp)  #C++ and C together
+c[1, 1] <- "C/C++"
+c[c$language == "C#",3] <-  sum(missing_commits$cs)
+c[c$language == "Objective-C",3] <-  sum(missing_commits$objc)
+c[c$language == "Go",3] <-  sum(missing_commits$go)
+c[c$language == "Coffeescript",3] <-  sum(missing_commits$coffee)
+c[c$language == "Javascript",3] <-  sum(missing_commits$js)
+c[c$language == "Ruby",3] <-  sum(missing_commits$ruby)
+c[c$language == "Typescript",3] <-  sum(missing_commits$ts)
+c[c$language == "Php",3] <-  sum(missing_commits$php)
+c[c$language == "Python",3] <-  sum(missing_commits$python)
+c[c$language == "Perl",3] <-  sum(missing_commits$perl)
+c[c$language == "Clojure",3] <-  sum(missing_commits$clojure)
+c[c$language == "Erlang",3] <-  sum(missing_commits$erlang)
+c[c$language == "Haskell",3] <-  sum(missing_commits$haskell)
+c[c$language == "Scala",3] <-  sum(missing_commits$scala)
+c[c$language == "Java",3] <-  sum(missing_commits$java)
+
+c %>% mutate(ratio = round(missing/(commits+missing)*100,0)) %>% arrange(desc(ratio)) %>% as.data.frame -> ratio_missing
+
+ggplot(data = ratio_missing, aes(x = reorder(language, ratio), y = ratio)) + 
+    geom_bar(stat="identity") +
+    xlab("") + ylab("Percentage missing commits") +
+    annotate("text", x = "Perl", y = 20, label = paste(ratio_missing[ratio_missing$language=="Perl",4], "%", sep = ""), color = "white") +
+    theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+    coord_cartesian(ylim=c(0, 20)) -> p
+
+ggsave(paste(WORKING_DIR, "/Figures/ratio_missing.pdf", sep = ""), p, width=5, height=2, units="in", scale=1.5)
+print(p)
+out("PerlMissingRatio", ratio_missing[ratio_missing$language=="Perl",4])
+```
+
+Perl is the outlier here, then Erlang, Go, PHP, and JavaScript.
+
+```{r}
+remove(WORKING_DIR)
+```
+

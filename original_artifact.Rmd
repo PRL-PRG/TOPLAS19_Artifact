@@ -1,0 +1,27 @@
+---
+title: "Building the Artifact of the original paper"
+output: html_notebook
+---
+
+First install the prerequisites of the original artifact:
+
+```{bash}
+sudo apt-get install tcsh
+```
+
+The following command extract the contents of the original artifact into the `original` directory alongside the archive. The original artifact contains two folders, the `R_code` folder in which the original R scripts can be found as they were given to us and the `sqlDump` folder, which contains the data. 
+
+```{bash}
+cd original
+tar -zxf artifact.tgz
+cd ..
+```
+
+After the original artifact is extracted, the sql data dump must be combined together to produce the two files the rest of the paper is concerned with, namely the `_everything.csv` file containing th entire dataset and th `_newSha.csv` containing filtered data. The original artifact contained the `rebuild.sh` script to produce these files, which can be found in the `original/sqlDump/DATA` directory:
+
+```{bash}
+cd original/sqlDump
+./rebuild.sh
+cd ../..
+```
+

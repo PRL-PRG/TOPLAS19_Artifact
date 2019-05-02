@@ -1,0 +1,904 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is our attempt at re-analysis. We only concentrate on RQ1.
+
+First, because this `Rmd` file can be executed by external script to allow automatic generation of all possible permutations of our re-analysis cleaning steps, we define certain variables that conditionally enable features of this document. By default they are all set to `TRUE`:
+
+```{r}
+if (! exists("REMOVE_DUPLICATES"))
+    REMOVE_DUPLICATES = T
+if (! exists("REMOVE_TYPESCRIPT"))
+    REMOVE_TYPESCRIPT = T
+if (! exists("REMOVE_V8"))
+    REMOVE_V8 = T
+if (! exists("UNCERTAINTY"))
+    UNCERTAINTY = T
+if (! exists("USE_AUTHORS_INSTEAD_OF_COMMITTERS"))
+    USE_AUTHORS_INSTEAD_COMMITTERS = T
+# sanity check prints
+cat(paste("REMOVE_DUPLICATES:              ", REMOVE_DUPLICATES, "\n"))
+cat(paste("REMOVE_TYPESCRIPT:              ", REMOVE_TYPESCRIPT, "\n"))
+cat(paste("REMOVE_V8:                      ", REMOVE_V8, "\n"))
+cat(paste("UNCERTAINTY:                    ", UNCERTAINTY, "\n"))
+cat(paste("USE_AUTHORS_INSTEAD_COMMITTERS: ", USE_AUTHORS_INSTEAD_COMMITTERS, "\n"))
+```
+
+Next, we setup working dir. Working dir can also be provided by external script, however if it is not provided, we verify that all features are enabled and set it to the default, i.e. `artifact/re-analysis`, where the paper expects the graphs to be found. 
+
+```{r}
+if (! exists("WORKING_DIR")) {
+    if (! REMOVE_DUPLICATES & REMOVE_TYPESCRIPT & REMOVE_V8 & UNCERTAINTY & USE_AUTHORS_INSTEAD_COMMITTERS)
+        stop("If non-default flags are submitted to the re-analysis notebook, WORKING_DIR must be set.")
+    WORKING_DIR = "./artifact/re-analysis"
+}
+```
+
+Now initialize the script's environment:
+
+```{r}
+# load the file containing the actual implementation details
+knitr::opts_chunk$set(echo = FALSE)
+source("implementation.R")
+initializeEnvironment()
+```
+
+# Data Collection
+
+We reuse the cleaning and optimization passes from the repetition and just load the result of that:
+
+```{r}
+data = read.csv("./artifact/repetition/Data/newSha.csv")
+initial_data = data
+initial_number_of_commits = length(unique(data$sha))
+initial_number_of_rows = nrow(data)
+everything =loadEverything()
+```
+
+# Data Cleaning
+
+## Removing Duplication
+
+First, we remove any duplicates, i.e. same commits that are present in multiple projects. We remove all occurences of commits that have duplicates since we do not know which one to pick to stay and different picks may bias the later analysis. 
+
+```{r}
+if (REMOVE_DUPLICATES) {
+    sha_proj = data %>% dplyr::select(sha, project) %>% group_by(sha, project) %>% dplyr::summarize(n = n())
+    duplicates_sha = sha_proj %>% group_by(sha) %>% dplyr::summarize(n = n()) %>% filter(n > 1)
+    # this is the number of commits that are present in multiple commits
+    num_duplicates_sha = nrow(duplicates_sha)
+    check(num_duplicates_sha == 27450)
+    # how many projects are affected? 
+    dup_repos = data %>% filter(sha %in% duplicates_sha$sha)
+    dup_repos = unique(dup_repos$project)
+    num_dup_repos = length(dup_repos)
+    check(num_dup_repos == 33)
+    # determine how many commits are there in the affected projects in total
+    commits_by_dup_repos = data %>% filter(project %in% dup_repos) %>% group_by(sha)
+    num_commits_by_dup_repos = nrow(commits_by_dup_repos)
+    # since we can't do better, exclude all duplicate commits from the dataset
+    data = data %>% filter(! sha %in% duplicates_sha$sha);
+    # some reporting for the paper
+    out("numberOfProjectsWithDuplicates", num_dup_repos)
+    out("numDuplicateCommits", num_duplicates_sha)
+    out("percentageDuplicateCommits", round(num_duplicates_sha/initial_number_of_commits * 100,2))
+    out("percentageDuplicateRowsLost", round(100 - nrow(data) / initial_number_of_rows * 100, 2))
+    hist(duplicates_sha$n, breaks = 100)
+}
+```
+
+By removing the duplicates we may have created project-language pairs that have fewer than 20 commits. The original study excluded such pairs and we see no reason not to repeat this. Let's find any such rows and delete them 
+
+```{r}
+if (REMOVE_DUPLICATES) {
+    num_rows_before_cleanup = nrow(data)
+    not_keep = data %>% group_by(project, language) %>% dplyr::summarize(n = n()) %>% filter(n < 20)
+    keep = data %>% group_by(project, language) %>% dplyr::summarize(n = n()) %>% filter(n >= 20)
+    data = keep %>% inner_join(data, by=c("project", "language"))
+    out("smallProjectCommits", nrow(not_keep))
+    out("percentageDuplicationReadjustmentRowsLost", round(100 - nrow(data)/num_rows_before_cleanup * 100, 2))
+}
+```
+
+## Removing Typescript
+
+The Typescript language was released in October 1, 2012 and is the smallest language in the study. However, its first commit in the study is dated 2003. What is happening here is that that the `.ts` extension is used for translation files, not Typescript, which was not detected by the original study. 
+
+```{r}
+if (REMOVE_TYPESCRIPT) {
+    ts = data %>% filter(language == "Typescript")
+    ts_rows_num = nrow(ts)
+    ts_proj_num = length(unique(ts$project))
+    check(ts_proj_num == 53)
+    out("initialNumTSProjects", ts_proj_num)
+    ts_commits_num <- length(unique(ts$sha))  
+    check(ts_commits_num == 10105)
+    out("initialNumTSCommits", ts_commits_num)
+    ts_dates <- sort(unique(ts$commit_date))  # "2003-03-01"
+    check(ts_dates[1] == "2003-03-21")
+    out("tsFirstCommit", ts_dates[1])
+}
+```
+
+We now remove from TS what we manually confirmed to be translations and not actual TypeScript:
+
+```{r}
+if (REMOVE_TYPESCRIPT) {
+  translation_projects <- c("mythtv", "hw", "SpeedCrunch", "qBittorrent", "mumble", "pokerth", "hydrogen", "unetbootin",
+                          "tiled", "goldendict", "zf2", "Cockatrice", "tagainijisho", "focuswriter", "LibreCAD", 
+                          "razor-qt", "qupzilla", "tomahawk", "ppcoin", "mirall", "MuseScore", "shotcut")
+  ts = ts %>% filter(! project %in% translation_projects)
+  check(length(unique(ts$sha)) == 4456)
+  ts = ts %>% 
+      filter(!str_detect(project, "coin")) %>%  # remove all the *coin  projects
+      filter(!str_detect(project, "Coin")) %>%  # remove all the *Coin  projects
+      filter(!str_detect(project, "change"))  # remove all the *change  projects
+  # TODO why are these in remaining??? 
+  remaining_translations <- c("antimicro", "identifi", "octopi", "pcbsd", "subsurface", "ttrss", "wps_i18n")
+  ts = ts %>% filter(!project %in% remaining_translations)
+  real_ts_num_proj <- length(unique(ts$project)) 
+  check(real_ts_num_proj == 16)
+  out("realTSProjNum", real_ts_num_proj)
+  real_ts_num_commit <- length(unique(ts$sha))
+  check(real_ts_num_commit == 3782)
+  out("realTSCommitsNum", real_ts_num_commit)
+  real_ts_proj <- unique(ts$project)
+}
+```
+
+Another issue with Typescript is that a lot of its files are only type definitions, and contain no actual code in Typescript but headers for Javascript functions and classes elsewhere. We should exclude these as well:
+
+```{r}
+if (REMOVE_TYPESCRIPT) {
+  # typescript-node-definitions, DefinitelyTyped, tsd
+  # DEPRECATED: TSD is deprecated, please use Typings and see this issue for more information.
+
+  tdefs1 = ts %>% filter(project=="typescript-node-definitions") 
+  tdefs2 = ts %>% filter(project=="DefinitelyTyped") 
+  tdefs3 = ts %>% filter(project=="tsd")
+  sts <- length(unique(ts$sha))
+  st1 <- length(unique(tdefs1$sha))
+  st2 <- length(unique(tdefs2$sha))
+  st3 <- length(unique(tdefs3$sha))
+
+  ratio <- round((st1 + st2 + st3)/sts*100, 1)
+  check(ratio == 34.6)
+  out("ratioOfTypeDefTSCommits", ratio)
+  
+  ts = ts %>% filter(project !="typescript-node-definitions") %>% filter(project !="DefinitelyTyped") %>% filter(project !="tsd")
+}
+```
+
+So what are we left with? 
+
+```{r}
+if (REMOVE_TYPESCRIPT) {
+   ts_valid_rows_num = nrow(ts)
+   ts_valid_commits = length(unique(ts$sha))
+   ts_valid_projects = length(unique(ts$project))
+   out("tsValidRows", ts_valid_rows_num)
+   out("tsValidCommits", ts_valid_commits)
+   out("tsValidProjects", ts_valid_projects)
+}
+```
+
+We are down to only 13 projects out of 50 and given the fact Typescript was the smallest language to begin with and how much of its commits we had to remove with minimal effort, the only safe thing we can do is to exclude Typescript from the analysis completely:
+
+```{r}
+if (REMOVE_TYPESCRIPT) {
+    num_rows_before_ts = nrow(data)
+    data = data %>% filter(language != "Typescript")
+    out("percentageTypescriptRowsLost", round(100 - nrow(data) / num_rows_before_ts * 100, 2))
+    data$language = factor(as.character(data$language))
+}
+```
+
+# Removing V8
+
+The V8 project is plagued with errors and inaccuracies:
+
+```{r}
+if (REMOVE_V8) {
+    v8 = everything %>% filter(project == "v8")
+    out("vCCommits", length(unique(v8[v8$tag == "c",]$sha)))
+    out("vCppCommits", length(unique(v8[v8$tag == "cpp",]$sha)))
+    out("vJavascriptCommits", length(unique(v8[v8$tag == "javascript",]$sha)))
+    out("vPythonCommits", length(unique(v8[v8$tag == "python",]$sha)))
+}
+```
+
+The paper ignores all of V8's C++ files (the `.cc` and `.h` file extensions are ignored) and classifies V8 as a JavaScript project. This is obviously wrong and since V8 is one of the larger projects, may skew the analysis substantially. To avoid this, we remove V8 from the data:
+
+```{r}
+if (REMOVE_V8) {
+    num_rows_before_v8 = nrow(data)
+    data = data %>% filter(project != "v8")
+    out("percentageVEightRowsLost", round(100 - nrow(data) / num_rows_before_v8 * 100, 2))
+}
+```
+
+## Summary
+
+Let's summarize the final numbers after all cleaning:
+
+```{r}
+newShaNum <- length(unique(data$sha))
+ratioSha <- round(100 - (newShaNum/initial_number_of_commits*100),2)
+out("finalNumSha", newShaNum)
+out("finalNumShaMio", round(newShaNum/1000/1000,1))
+out("ratioReducedSha", ratioSha)
+out("ratioReducedShaRows", round(100 - nrow(data) / nrow(initial_data) * 100, 2))
+
+f_number_of_projects <- length(unique(data$project))
+check(f_number_of_projects == 719) 
+out("finalNumberOfProjectsIncluded", f_number_of_projects)
+
+f_sloc <- sum(data$insertion) - sum(data$deletion)
+f_sloc_mio <- round(f_sloc / 1000000, 1)
+check(f_sloc_mio == 58.2)
+out("finalSlocMio", f_sloc_mio)
+
+f_number_authors <- length(unique(data$author))
+check(f_number_authors == 46204)
+out("finalNumberAuthors", round(f_number_authors/1000,0))
+
+f_bugFixes = data %>% filter(isbug == 1)
+f_numberOfBugFixes <-  length(unique(f_bugFixes$sha))
+out("finalNumberOfBugFixes", f_numberOfBugFixes)
+```
+
+Let's see how much data we shed in different categories:
+
+```{r}
+cat(paste("Commits (unique):     ", round(100 - length(unique(data$sha)) / length(unique(initial_data$sha)) * 100, 2), "%\n"))
+cat(paste("Commits (rows):       ", round(100 - nrow(data) / nrow(initial_data) * 100, 2), "%\n"))
+cat(paste("Buggy commits (rows): ", round(100 - sum(data$isbug) / sum(initial_data$isbug) * 100, 2), "%\n"))
+cat(paste("Projects:             ", round(100 - length(unique(data$project)) / length(unique(initial_data$project)) * 100, 2), "%\n"))
+cat(paste("SLOC:                 ", round(100 - sum(data$insertion - data$deletion) / sum(initial_data$insertion - initial_data$deletion) * 100, 2), "%\n"))
+cat(paste("Languages:            ", round(100 - length(unique(data$language)) / length(unique(initial_data$language)) * 100, 2), "%\n"))
+cat(paste("Authors:              ", round(100 - length(unique(data$author)) / length(unique(initial_data$author)) * 100, 2), "%\n"))
+```
+
+# Summarization
+
+Summarize the data for the graphs and modelling as we did in the repetition:
+
+```{r}
+data$combined = data$combinedOriginal # does not matter
+if (USE_AUTHORS_INSTEAD_COMMITTERS) {
+    data$devs = data$author
+} else {
+    data$devs = data$committer
+}
+X = summarizeByLanguage(data)
+Y = logTransform(X, log, log)
+```
+
+# Graphs
+
+Let's do some graphs:
+
+## Commits vs. Bugfixes.
+
+```{r}
+data %>% group_by(language) %>% summarize(commits = n(), bugfixes = sum(isbug)) -> df
+
+ggplot(data=df, aes(x=commits, y=bugfixes)) + 
+  geom_smooth(method='lm',size=.5, formula = y ~ x)  +
+  geom_point()  + 
+  geom_text_repel(aes(label=language), segment.color = 'grey50', fontface = 'bold', size = 5) + 
+  theme_light() +
+  theme(text = element_text(size = 15)) +
+  labs(y="Bug-fixing commits", x = "Commits") +
+  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+                labels = trans_format("log10", math_format(10^.x))) + 
+  scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
+                  labels = trans_format("log10", math_format(10^.x))) -> p
+
+ggsave(paste(WORKING_DIR, "/Figures/commits.pdf", sep = ""))
+print(p)
+```
+
+## Bug rate vs project age for selected languages
+
+```{r fig.height=8, fig.width=5}
+X %>% 
+  dplyr::select(project, language, commits, bcommits,max_commit_age) %>% 
+  mutate(br=round(bcommits/commits*100,1)) -> df
+
+most_commits <- .9 * sum(X$commits)
+df %>% arrange(desc(commits)) -> df
+
+# find the number of project that would comprise over 90% of the entire dataset
+accumulatedCommits = 0
+i = 0
+while (accumulatedCommits <= most_commits) {
+    i = i + 1
+    accumulatedCommits = accumulatedCommits + df[i, 3]
+}
+# verify that we have the correct nunber
+check(sum(df[1:i,3]) > most_commits) 
+check(sum(df[1:i-1,3]) <= most_commits) 
+
+df[1:i,] ->most_df
+
+most_df %>% filter(language %in% c("C", "C++","Clojure","Haskell","Objective-C","Scala")) -> most_df2
+
+br_mean <- most_df2 %>% group_by(language) %>% summarise(br=mean(br))
+age_mean <- most_df2 %>% group_by(language) %>% summarise(age=mean(max_commit_age))
+
+ggplot(data=most_df2, aes(x=max_commit_age,y=br,color=language)) + geom_point() +
+  geom_hline(aes(yintercept=br, color='black'), size=.25, br_mean) +
+  geom_vline(aes(xintercept=age), size=.25, age_mean) +
+   theme_light() +
+  theme(text = element_text(size=20)) +
+  scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x), 
+                  labels = trans_format("log10", math_format(10^.x))) +
+                labs(x="Project age (days)", y="Bug rate (percent of commits)") +
+                theme(legend.position = "none") +
+                facet_wrap(~language, ncol=2) -> p
+
+X %>% 
+  mutate(br=round(bcommits/commits*100,1)) %>% 
+  group_by(language) %>% 
+  summarize(mbr = mean(br), mage = mean(max_commit_age)) %>% 
+  arrange(desc(mbr)) -> mbr
+
+ggsave(paste(WORKING_DIR, "/Figures/age.pdf", sep = ""), width=8, height=8)
+print(p)
+```
+
+## Developer behavior
+
+```{r}
+data %>% group_by(author) %>% summarize(n=n())  %>% arrange(desc(n)) -> devs
+
+most_commits_bydev <- .9*sum(devs$n)
+
+# find the number of developers accounting for <= 90% of the entire dataset
+accumulatedCommits = 0
+d = 0
+while (accumulatedCommits <= most_commits_bydev) {
+    d = d + 1
+    accumulatedCommits = accumulatedCommits + devs[d, 2]
+}
+
+# verify that we have the correct nunber
+check(sum(devs[1:d-1,2]) < most_commits_bydev) 
+check(sum(devs[1:d,2]) > most_commits_bydev)
+
+devs_prolific <- devs$author[1:d]
+
+# Show the number of languages the most prolific authors committed for
+data %>% filter(author %in% devs_prolific) -> devs_prolific
+devs_prolific = devs_prolific %>% group_by(author,language) %>% summarize(n=n()) %>% summarize(l=n())  %>% arrange(desc(l))
+devs_prolific
+hist(devs_prolific$l)
+```
+
+# Modelling
+
+## Basic analyses & graphs of the dataset
+
+```{r}
+dimnames(X)[[2]]
+pairs(X[,3:7], gap=0, pch='.')
+```
+
+Let's log transform the data:
+
+```{r}
+Y = logTransform(X)
+pairs(Y[,2:6], gap=0, pch='.')
+```
+
+## Language Frequencies
+
+Explore the relative frequencies of the languages--how many projects use them in the dataset
+
+```{r}
+sort(table(Y$language))
+```
+
+The dataset contains 17 languages (16, if we remove TypeScript). They were represented by unevenly distributed numbers of projects (from 23 for Perl to 199 for Javascript).
+
+Explore the relationship between the languages, and other measurements 
+
+```{r}
+# (devs, tins, max_commit_age, commits, bcommits)
+boxplot(split(Y$lbcommits, Y$language), las=2, main="Log(bugged commits, 0 replaced with 0.5)")
+par(mfrow=c(1,2), oma=c(1,1,1,1), mar=c(5,1,2,1))
+boxplot(split(Y$ldevs, Y$language), las=2, main="Log(devs)")
+boxplot(split(Y$ltins, Y$language), las=2, main="Log(tins)")
+boxplot(split(Y$lmax_commit_age, Y$language), las=2,
+        main="Log(max_commit_age)")
+boxplot(split(Y$lcommits, Y$language), las=2, main="Log(commits)")
+```
+
+The distribution of bug-commits varied between the languages, but so did the distributions of the other measurements. It is difficult to see direct associations between languages and bugs from bivariate plots.
+
+## Fitting the Negative Binomial
+
+Let's now fit the negative binomial and compare to the original paper - this is the same code as in replication:
+
+```{r}
+nbfit = glm.nb(bcommits~lmax_commit_age+ltins+ldevs+lcommits+language, contrasts = list(language = contr.Weights(Y$language)), data=Y)
+nbfit_r = glm.nb(bcommits~lmax_commit_age+ltins+ldevs+lcommits+language_r, contrasts = list(language_r = contr.Weights(Y$language_r)), data=Y)
+# combine them into single result table
+resultWeighted = combineModels(nbfit, nbfit_r, Y$language)
+juxtWeighted = merge(resultWeighted, baselineFSE_RQ1(), by = 0, all = T, sort = F)
+juxtWeighted$ok = checkPValues(juxtWeighted, "FSE_pv", "pVal")
+juxtWeighted
+```
+
+And we see that just cleaning the data did invalidate several of the language claims made by the original paper. 
+
+## Fitting the zero-Sum Contrasts Negative Binomial
+
+The zero-sum contrasts are preferred to weighted contrasts for their better stability. Let's look at how they look:
+
+```{r}
+contr.sum(length(levels(Y$language)))
+```
+
+And let's fit the model:
+
+```{r}
+nbfit = glm.nb(bcommits~lmax_commit_age+ltins+ldevs+lcommits+language, contrasts = list(language = contr.sum), data=Y)
+nbfit_r = glm.nb(bcommits~lmax_commit_age+ltins+ldevs+lcommits+language_r, contrasts = list(language_r = contr.sum), data=Y)
+# combine them into single result table
+resultZeroSum = combineModels(nbfit, nbfit_r, Y$language)
+juxtZeroSum = merge(resultZeroSum, baselineFSE_RQ1(), by = 0, all = T, sort = F)
+juxtZeroSum$ok = checkPValues(juxtZeroSum, "FSE_pv", "pVal")
+juxtZeroSum
+```
+
+Some invalidatuions still. 
+
+##  Fit Negative Binomial regression without languages and compare the full and the reduced models
+
+```{r}
+nbfit_reduced <- glm.nb(bcommits~lmax_commit_age+ltins+ldevs+lcommits, data=Y)
+summary(nbfit_reduced)
+```
+
+Comparing two nested models, i.e.$H_0$: reduced model vs $H_a$: full model, using F-test:
+
+```{r}
+anova(nbfit_reduced, nbfit)
+```
+
+```{r}
+cat("AIC, full:", AIC(nbfit), "\n")
+cat("AIC, reduced:", AIC(nbfit_reduced), "\n")
+cat("BIC, full:", BIC(nbfit), "\n")
+cat("BIC, reduced:", BIC(nbfit_reduced), "\n")
+```
+
+The difference between the models is borderline.
+
+## Adjusting for Multiple Hypothesis
+
+The original paper just compares the p-Values against thresholds, which is not correct way to do. In the presence of multiple hypothesis, the p-Values must be adjusted. There are various ways to adjust the p-Values, namely the Bonferroni and FDR (Benjamini & Hochberg). The FDR adjustment is more permissive and the Bonferrioni is the more conservative one. What we can do now is to revisit the juxtaposed tables and add extra columns for the FDR and Bonferroni adjustments:
+
+```{r}
+# the the pValues for the predictions, not for the control variables since these are ignored by the adjustments
+pValWeighted = juxtWeighted$pVal[6:(5 + length(unique(Y$language)))]
+# create the empty vectors with NAs instead of pValues
+fdrWeighted = rep(NA, nrow(juxtWeighted))
+bonfWeighted = rep(NA, nrow(juxtWeighted))
+# update the relevant parts of the vectors with the adjusted pValues
+fdrWeighted[6:(5+ length(pValWeighted))] = round(p.adjust(pValWeighted, "fdr"), 3)
+bonfWeighted[6:(5+ length(pValWeighted))] = round(p.adjust(pValWeighted, "bonferroni"), 3)
+# add the columns to the juxtaposed tables
+juxtWeighted$pVal_fdr = fdrWeighted
+juxtWeighted$pVal_bonf = bonfWeighted
+# now remove the old ok column and add the ok, ok_fdr and ok_bonf columns
+juxtWeighted = juxtWeighted %>% dplyr::select(-(ok))
+# add the columns
+juxtWeighted$ok = checkPValues(juxtWeighted, "FSE_pv", "pVal")
+juxtWeighted$ok_fdr = checkPValuesLevel(juxtWeighted, "FSE_pv", "pVal_fdr", 0.01)
+juxtWeighted$ok_bonf = checkPValuesLevel(juxtWeighted, "FSE_pv", "pVal_bonf", 0.01)
+juxtWeighted
+```
+
+With the exception of the last language (Coffeescript), the FDR and Bonferroni are the same and they actually invalidate some of the original predictions. Let's look at the zero-sum contrasts version now:
+
+```{r}
+# the the pValues for the predictions, not for the control variables since these are ignored by the adjustments
+pValZeroSum = juxtZeroSum$pVal[6:(5 + length(unique(Y$language)))]
+# create the empty vectors with NAs instead of pValues
+fdrZeroSum = rep(NA, nrow(juxtZeroSum))
+bonfZeroSum = rep(NA, nrow(juxtZeroSum))
+# update the relevant parts of the vectors with the adjusted pValues
+fdrZeroSum[6:(5+ length(pValZeroSum))] = round(p.adjust(pValZeroSum, "fdr"), 3)
+bonfZeroSum[6:(5+ length(pValZeroSum))] = round(p.adjust(pValZeroSum, "bonferroni"), 3)
+# add the columns to the juxtaposed tables
+juxtZeroSum$pVal_fdr = fdrZeroSum
+juxtZeroSum$pVal_bonf = bonfZeroSum
+# now remove the old ok column and add the ok, ok_fdr and ok_bonf columns
+juxtZeroSum = juxtZeroSum %>% dplyr::select(-(ok))
+# add the columns
+juxtZeroSum$ok = checkPValues(juxtZeroSum, "FSE_pv", "pVal")
+juxtZeroSum$ok_fdr = checkPValuesLevel(juxtZeroSum, "FSE_pv", "pVal_fdr", 0.01)
+juxtZeroSum$ok_bonf = checkPValuesLevel(juxtZeroSum, "FSE_pv", "pVal_bonf", 0.01)
+juxtZeroSum
+```
+
+The situation is fairly similar here. 
+
+## Statistical significance vs practical significance, for languages
+
+Since the number of observations is large, statistical significance can be driven by the sample size without being meaningful in practice.
+
+Here we contrast model-based confidence intervals and prediction intervals, on the log and on the original scale
+
+```{r}
+numLanguages = length(unique(Y$language))
+
+# Create a new data structure for prediction
+newY <- NULL
+for (i in 1:numLanguages) {
+  newY <- rbind(newY, 
+                data.frame(language=rep(levels(Y$language)[i], 100),
+                ldevs=rep(median(Y$ldevs), 100), 
+                lcommits=seq(from=min(Y$lcommits), to=max(Y$lcommits), length=100),
+                ltins=rep(median(Y$ltins), 100),
+                lmax_commit_age=rep(median(Y$lmax_commit_age), 100)))
+}
+newY$commits <- exp(newY$lcommits)
+
+# Make predictions
+pr_nbfit <- predict(nbfit, type="response", newdata=newY, se.fit=TRUE)
+newY$pr_mean <- pr_nbfit$fit
+newY$pr_se <- pr_nbfit$se.fit
+```
+
+Consider languages with the most predicted bugs (C++) and fewest predicted bugs (Clojure). 
+Compute the log CI for C++ and Clojure and the log Prediction CI.
+Then translate the intervals on the original scale.
+
+```{r}
+
+axfont  = 32 # size of axis title font
+ticfont = 26 # size of axes' font
+legfont = 28 # size of legend title
+legtext = 26 # size of legend text
+ptitle  = 30 # size of plot title letters
+
+getConfInterval<-function(df,lang) {
+  df %>% 
+    filter(language==lang)  %>%
+    mutate(language = lang,
+           x = lcommits, y = log(pr_mean), 
+           yhigh = log(pr_mean + qnorm(1-0.01/numLanguages) * pr_se),
+           ylow =  log(pr_mean - qnorm(1-0.01/numLanguages) * pr_se)) %>%
+    dplyr::select(language, x, y, ylow, yhigh)
+}
+dfCI <- rbind(getConfInterval(newY, "C++"), getConfInterval(newY, "Clojure"))
+
+getPredInterval<-function(df,lang) {
+  df %>% 
+    filter(language==lang) %>% 
+    mutate(language = lang,
+           x = lcommits, y = log(pr_mean), 
+           yhigh = log(qnbinom(1-0.01/numLanguages, mu= pr_mean, size= nbfit$theta) ),
+           ylow = log(qnbinom(0.01/numLanguages, mu=pr_mean, size=nbfit$theta))) %>%
+    dplyr::select(language, x, y, ylow, yhigh)
+}
+dfPI <- rbind(getPredInterval(newY, "C++"), getPredInterval(newY, "Clojure"))
+
+plotIt <- function(df) {
+  ggplot(data = df, aes(x=x,y=y,color=language)) + geom_line() +
+    geom_ribbon(aes(ymin=df$ylow, ymax=df$yhigh), linetype=2, alpha=0.1) +
+    labs(x="log of commits", y="log of bug-fixing commits") + 
+    theme_light() +
+    theme(axis.title = element_text(size=axfont),
+          axis.text = element_text(size=ticfont),
+          plot.title = element_text(hjust = 0.5, size = ptitle))
+}
+
+plotIt(dfCI) + theme(legend.position = "none") + ggtitle("(a)") -> p1
+plotIt(dfPI) + theme(legend.title = element_text(size=legfont),
+                      legend.text = element_text(size=legtext)) +
+                      guides(colour = guide_legend(nrow = 1)) + 
+                      ggtitle("(b)") -> p2
+
+# Grab the legend to display it separately
+tmp    <- ggplot_gtable(ggplot_build(p2))
+l      <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+legend <- tmp$grobs[[l]]
+legend
+
+p2 + theme(legend.position = "none") -> p2
+
+getConfInterval <- function(df,lang) {
+  df %>% 
+    filter(language==lang)  %>%
+    mutate(language = lang,
+           x = commits,
+           y = pr_mean, 
+           yhigh = pr_mean + qnorm(1-0.01/numLanguages) * pr_se,
+           ylow =  pr_mean - qnorm(1-0.01/numLanguages)* pr_se ) %>%
+    dplyr::select(language, x, y, ylow, yhigh)
+}
+dfCI <- rbind(getConfInterval(newY, "C++"), getConfInterval(newY, "Clojure"))
+
+getPredInterval<-function(df,lang) {
+  df %>% 
+    filter(language==lang) %>% 
+    mutate(language = lang,
+           x = commits, y = pr_mean, 
+           yhigh = qnbinom(1-0.01/numLanguages, mu= pr_mean, size= nbfit$theta) ,
+           ylow =qnbinom(0.01/numLanguages, mu=pr_mean, size=nbfit$theta)) %>%
+    dplyr::select(language, x,y,ylow,yhigh)
+}
+dfPI <- rbind(getPredInterval(newY, "C++"), getPredInterval(newY, "Clojure"))
+
+plotIt <- function(df) {
+  ggplot(data = df, aes(x=x,y=y,color=language)) + geom_line() +
+    geom_ribbon(aes(ymin=df$ylow, ymax=df$yhigh), linetype=2, alpha=0.1) +
+    theme_light() +
+    theme(axis.title = element_text(size=axfont),
+          axis.text = element_text(size=ticfont),
+          plot.title = element_text(hjust = 0.5, size = ptitle),
+          legend.position = "none") +
+    labs(x="commits", y="bug-fixing commits")
+}
+plotIt(dfCI) + xlim(0,800) + ylim(0,400) + ggtitle("(c)") -> p3
+plotIt(dfPI) + xlim(0,800) + ylim(0,620) + ggtitle("(d)") -> p4
+```
+
+```{r fig.width=32, fig.height=8}
+pdf(paste(WORKING_DIR, "/Figures/intervals.pdf", sep = ""), width=32, height=8)
+figs <- grid.arrange(arrangeGrob(p1, p2, p3, p4, nrow=1), arrangeGrob(legend), nrow=2, heights=c(4,1))
+dev.off()
+```
+
+```{r}
+# Plot predicted means for all the languages
+par(mfrow=c(1,2))
+# Log scale
+plot(log(pr_mean)~lcommits,
+     main="log(Exp. values), all languages",
+     data=newY[newY$language==levels(Y$language)[1],],
+     type="l", 
+     ylab="log(bugged commits)")
+for (i in 2:numLanguages) {
+  lines(log(pr_mean)~lcommits,
+     data=newY[newY$language==levels(Y$language)[i],])
+}
+
+# Original scale
+plot(pr_mean~commits,
+     main="Exp. values, all languages",
+     data=newY[newY$language==levels(Y$language)[1],],
+     type="l", 
+     xlim=c(0, 800),
+     ylim=c(0,400),
+     ylab="bugged commits")
+for (i in 2:numLanguages) {
+  lines(pr_mean~commits,
+     data=newY[newY$language==levels(Y$language)[i],])
+}
+
+```
+
+## Add uncertainty in labels
+
+
+```{r}
+if (UNCERTAINTY) {
+    fp <- 0.36
+    fn <- 0.11
+    # Function to get parameter values
+    getParams <- function(Ystar) {
+        # Fit NB with standard contrasts
+        nbfit <- glm.nb(bcommits~lmax_commit_age+ltins+ldevs+lcommits+language, 
+                           contrasts = list(language = "contr.sum"), data=Ystar)
+        s <- summary(nbfit)$coefficients
+      
+        # Fit the releveled model with standard contrasts, 
+        # to get the parameter for Scala
+        nbfit_r <- glm.nb(bcommits~lmax_commit_age+ltins+ldevs+lcommits+language_r, 
+                         contrasts = list(language_r = "contr.sum"), data=Ystar)
+        s_r <- summary(nbfit_r)$coefficients
+    
+        # Return params, incluing Scala
+        out <- c(s[,1], s_r[6, 1])
+        names(out) <- c(dimnames(s)[[1]][1:5], levels(Ystar$language))
+        out
+    }
+    numBootstrapIterations = 10000
+    # Perform sampling
+    set.seed(1)
+    paramNum <- numLanguages + 5
+    paramsLang <- matrix(rep(NA,paramNum*numBootstrapIterations), nrow=paramNum)
+    for (i in 1:numBootstrapIterations) {
+        # Sample rows
+        Ystar <- Y[sample(1:nrow(Y), replace = T),]
+      
+        # Adjust for tp and fp:
+        # Reduce bcommits by prob fp
+        # Increase non-bugged commits by prob fn
+        tmp <- rbinom(n=nrow(Ystar), size=Ystar$bcommits, prob=1-fp) +
+          rbinom(n=nrow(Ystar), size=(Ystar$commits-Ystar$bcommits), prob=fn)
+        Ystar$bcommits <- tmp
+      
+        # Get parameters
+        paramsLang[,i] <- getParams(Ystar)
+    }
+}
+```
+
+To determine whether the bootstrapped values are statistically signifficant, we analyze whether the x and 1-x quantiles both have the same sign. If they do, the result is signifficant in that regard, if the do not, then the results is not statistically signifficant. Similarly to p-values, we can compare using different quantiles. The proper, conservative quantile is 0.01 divided by number of languages tested, the less conservative option is just 0.01.
+
+```{r}
+if (UNCERTAINTY) {
+    paramsRowNames = getModelRowNames(nbfit, Y$language)
+    result = data.frame(
+        row.names = paramsRowNames,
+        coef = rep(NA, length(paramsRowNames)),
+        se = rep(NA, length(paramsRowNames)),
+        sig = rep(NA, length(paramsRowNames)),
+        sigCons = rep(NA, length(paramsRowNames))
+    )
+    
+    
+    par(mfrow=c(2,4))
+    quant = 0.01
+    quantCons = 0.01 / numLanguages
+    for ( i in 1:length(paramsRowNames)) {
+        result$coef[[i]] = round(mean(paramsLang[i,]), digits = 2)
+        result$se[[i]] = round(sd(paramsLang[i,]), digits = 2)
+        qsigns = sign(quantile(paramsLang[i,], probs = c(quant, 1-quant, quantCons, 1-quantCons), na.rm = T))
+        result$sig[[i]] = qsigns[[1]] == qsigns[[2]]
+        result$sigCons[[i]] = qsigns[[3]] == qsigns[[4]]
+        hist(paramsLang[i,],
+             xlab=paramsRowNames[i], 
+             main=paste("mean =", round(mean(paramsLang[i,]), digits=2))
+        )
+        abline(v=0, col="red", lwd=2)
+    }
+}
+```
+
+```{r}
+if (UNCERTAINTY) {
+    result
+}
+```
+
+Finally, let's juxtapose this to the baseline as usual:
+
+```{r}
+if (UNCERTAINTY) {
+    juxtBootstrap = merge(result, baselineFSE_RQ1(), by = 0, all = T, sort = F)
+    juxtBootstrap$ok = checkSignificance(juxtBootstrap, "FSE_pv", "sigCons")
+    juxtBootstrap
+}
+```
+
+# More graphs: Bug rate over time
+
+```{r echo=FALSE}
+filter_proj <- function(df,proj,lang) {
+   data %>% 
+    ungroup() %>%
+    filter(project == proj, language == lang) %>% 
+    dplyr::select(commit_age, isbug) %>%
+    arrange(commit_age) -> bt
+  bt %>% 
+    group_by(commit_age,isbug) %>% 
+    summarize(n = n()) %>% 
+    spread(key = "isbug",value = "n") -> bt2
+  bt2 %>% 
+    mutate(br = round(`0`/(`0`+`1`),2), 
+           month = as.integer(commit_age/30)) -> bt3
+  bt3  %>% 
+    na.omit() %>% 
+    group_by(month) %>% 
+    summarize(n = n(), brs = sum(br), brm = brs/n) %>%
+    mutate(name= paste0(proj," ",lang)) -> prj
+  rbind(df, prj)
+}
+
+filter_proj(NULL, "linux","C") %>%
+filter_proj("mono","C#") %>%
+filter_proj("homebrew","Ruby") %>%
+filter_proj("WordPress","Php") %>%
+filter_proj("salt","Python") %>%
+filter_proj("mythtv","C++") %>%
+filter_proj("jenkins","Java") %>%
+filter_proj("akka","Scala") %>%
+filter_proj("rabbitmq-server","Erlang") %>%
+filter_proj("brackets","Javascript") %>%
+filter_proj("yi","Haskell") %>%
+filter_proj("overtone","Clojure")  ->prj
+
+prj %>% ggplot( aes(x = month, y = brm)) +
+        geom_point(size=.4) +
+        theme_light() +
+        geom_smooth(method='lm',size=.5, formula = y ~ x) +
+        facet_wrap( ~ name,ncol=3) + labs(x="",y="") +
+        xlab("Project lifetime (months)") + ylab("Percent bug-labeled commits") +
+        theme(strip.text.x = element_text(size = 14), text = element_text(size=13)) +
+        theme(text = element_text(size=20))
+
+        
+ggsave(paste(WORKING_DIR, "/Figures/bugspermonth.pdf", sep = ""), width = 8, height = 8, dpi = 100)
+```
+
+# Commits for top-5 projects by language
+
+```{r fig.width = 20, fig.height = 4, echo=FALSE}
+data %>% group_by(language, project) %>% summarize(n = n()) %>% arrange(desc(n)) %>% arrange(desc(language)) %>% top_n(5, wt = n) -> projsize_ordered2
+projsize_ordered2
+
+projsize_ordered2 %>% ggplot(aes(x = reorder(factor(project), -n), y = n)) + 
+  geom_bar(stat="identity") + 
+  facet_grid(. ~ language, scales = "free") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(x = "Project (by language)", y = "Number of Commits") +
+  scale_y_continuous(labels = scales::comma)
+```
+
+# Authors
+
+```{r}
+everything %>% group_by(author, sha) %>% summarize(n=n()) %>% group_by(author) %>% summarise(commits = n()) -> auth
+auth %>% arrange(desc(commits))
+tot <- sum(auth$commits)
+check( tot == 1485049)
+top <- sort(auth$commits, dec=T)[1:453]
+sum(top)/tot ## 46 %
+
+everything %>% group_by(author, project) %>% summarize(n=n()) %>% 
+  group_by(author) %>% summarise(proj = n())   %>% arrange(desc(proj)) -> authproj
+
+summary(authproj)  ## mean 1.2
+```
+
+# Writing the results
+
+Finally, let's write the results of our analyses into CSV files so that they can be picked and analyzed later:
+
+```{r}
+weighted = data.frame(
+    coef = juxtWeighted$coef,
+    se = juxtWeighted$se,
+    pVal = round(juxtWeighted$pVal,3),
+    pVal_fdr = juxtWeighted$pVal_fdr,
+    pVal_bonf = juxtWeighted$pVal_bonf,
+    row.names = juxtWeighted$Row.names
+)
+write.csv(weighted, paste0(WORKING_DIR, "/Data/languages_weighed.csv"))
+zeroSum = data.frame(
+    coef = juxtZeroSum$coef,
+    se = juxtZeroSum$se,
+    pVal = round(juxtZeroSum$pVal,3),
+    pVal_fdr = juxtZeroSum$pVal_fdr,
+    pVal_bonf = juxtZeroSum$pVal_bonf,
+    row.names = juxtZeroSum$Row.names
+)
+write.csv(zeroSum, paste0(WORKING_DIR, "/Data/languages_zeroSum.csv"))
+# only store bootstrap if we have actually created it
+if (UNCERTAINTY) {
+    bootstrap = data.frame(
+        coef = juxtBootstrap$coef,
+        se = juxtBootstrap$se,
+        sig = juxtBootstrap$sig,
+        sigCons = juxtBootstrap$sigCons,
+        row.names = juxtBootstrap$Row.names
+    )
+    write.csv(bootstrap, paste0(WORKING_DIR, "/Data/languages_bootstrap.csv"))
+}
+```
+
+
+```{r}
+remove(WORKING_DIR)
+```
+

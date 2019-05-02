@@ -1,0 +1,34 @@
+---
+title: "Threats To Validity"
+output: html_notebook
+---
+
+```{r}
+# load the file containing the actual implementation details
+knitr::opts_chunk$set(echo = FALSE)
+source("implementation.R")
+initializeEnvironment("./artifact/threats-to-validity")
+```
+
+
+# Tests in the files
+
+```{r}
+data = read.csv("./artifact/repetition/Data/newSha.csv")
+files = loadEverything()
+```
+
+Let's see how many of the files are tests. First clear the files dataset to only contain commits that are in the `data` we analyze:
+
+
+```{r}
+files = files %>% filter(sha %in% unique(data$sha))
+```
+
+```{r}
+files %>% filter(str_detect(file_name,"Test|test")) -> tests
+out("ratioTestsFiles",round(nrow(tests)/nrow(files)*100,1))
+files %>% filter(!str_detect(file_name,"Test|test")) -> notests
+out("testFilesCommitted", nrow(tests))
+out("ratioTestFilesCommittedOverAll", round(nrow(tests)/nrow(files)*100,1))
+```

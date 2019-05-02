@@ -1,0 +1,199 @@
+http://github.com/0x43/DesignPatternsPHP/commit/0d35ab368bfb71f2a72c538e9a4d708d51b2f98d,fixed typo in code,0
+http://github.com/0x43/DesignPatternsPHP/commit/2ca016fb66b16ae1591baee64c7c5f1c1cf9986d,fixes comments,0
+http://github.com/0x43/DesignPatternsPHP/commit/55017fb43f936aa230be65447f5e69a38dda7f10,looks more like a feature to me,0
+http://github.com/0x43/DesignPatternsPHP/commit/623ad063305ce5240e47ebfdaad2bc17419fe75f,fixed typo,0
+http://github.com/0x43/DesignPatternsPHP/commit/6d5f72beec06cc9e1b4eef1d1b06fe9af9428fdb,"fixes comments
+",0
+http://github.com/0x43/DesignPatternsPHP/commit/8321d06e9f5c96e624014f207d46c4c2d5ff8dd8,fixed typo in comments,0
+http://github.com/0x43/DesignPatternsPHP/commit/89f1e64ad04e7233d4f9afbe476cdd9ede8df7b8,bugfix,1
+http://github.com/0x43/DesignPatternsPHP/commit/ceb6a3eeb958576c5229a057be802cca976031ec,fixed typo in comments,0
+http://github.com/0x43/DesignPatternsPHP/commit/cfa901490681247b01da5913b0f3f1910916a449,fixed namespace name,1
+http://github.com/0x43/DesignPatternsPHP/commit/f2074443076d0e2100014142ac3bce5c3aa080f6,fixed typo in comments,0
+http://github.com/19hz/nsq/commit/043b79acda5fe57056b3cc21b2ef536d5615a2c2,"not a bug, timeout increase",0
+http://github.com/19hz/nsq/commit/2a6ed0dd5a24e6f9f73b6742007f1b2cf99fb31b,feature,0
+http://github.com/19hz/nsq/commit/3c39924a9ca8c6d5d6ac36b6c4d509eeb078788b,bug,1
+http://github.com/19hz/nsq/commit/46496bd122a2fa31f2d43ef31f2dbb4bd68a77a0,bug,1
+http://github.com/19hz/nsq/commit/49562bc09c1cf4183eb87849b9ae4fb5ebafcaa4,bug,1
+http://github.com/19hz/nsq/commit/49ecef58e0e8ba0a1875e7830e344c7482beeebb,feature   ,0
+http://github.com/19hz/nsq/commit/89b9aa47ad5493a2334f9690cd6fcaa883022feb,bug,1
+http://github.com/19hz/nsq/commit/9182085b8439d162f5fc37abe675304a07bc9066,bug,1
+http://github.com/19hz/nsq/commit/a79206e1f3f89047acb6d17d9bd80f10437bb56d,"not a bug, removed lefover debug line",0
+http://github.com/19hz/nsq/commit/bdc7f00889e0153602047590302f97b89941bc02,bug,1
+http://github.com/AlexMeliq/less.js/commit/10de9d02e4ee08b2dc07e0035b0ab9bf7f43781a,fix,1
+http://github.com/AlexMeliq/less.js/commit/1199ce41b094def9b90edb56afcf8761d2294521,improvement,0
+http://github.com/AlexMeliq/less.js/commit/16ad5bee0ba80d5f7db40efcb2c0ec175bc14faf,fix,1
+http://github.com/AlexMeliq/less.js/commit/21cc34b608f483fb101923b597640408815ab0f5,fix,1
+http://github.com/AlexMeliq/less.js/commit/22c5bd77c43e796a86aceeff3450c3583718cd7c,"fix, possibly improvement",1
+http://github.com/AlexMeliq/less.js/commit/29a894231a9eea1198ba97b1c46650792a202911,improved error message,0
+http://github.com/AlexMeliq/less.js/commit/2cc1b018fef08f73cb64e4b4be07bfc5a921c08e,"refactoring, better error messages",0
+http://github.com/AlexMeliq/less.js/commit/3047f7603e62edd5a2b2b6953b04a3f55e09e415,fix,1
+http://github.com/AlexMeliq/less.js/commit/3171a62f0d16641ea329f72197acce76c7c71841,fix,1
+http://github.com/AlexMeliq/less.js/commit/f9b68f8f741c3e48520edeb597a20714c18bc165,fix path separator on different platforms,0
+http://github.com/alibaba/tengine/commit/0c09090eb2ced65b7082d045c7c05f315b31f37c,fix,1
+http://github.com/alibaba/tengine/commit/1683a2df95c72beefb9feac0559c10324c1ef413,fix,1
+http://github.com/alibaba/tengine/commit/26e19be4a499eef06d5ef5450a3ffa6a1441c67c,fix for standard,1
+http://github.com/alibaba/tengine/commit/2d8f99afd4437036b1c1b04175f263ab3fe0963f,fix,1
+http://github.com/alibaba/tengine/commit/54f6b040ac8a22f3e48f33414afaa0a96ea20182,fix,1
+http://github.com/alibaba/tengine/commit/5b54b543792fd6e0a30c1c213063b4aef3f14ea3,fix,1
+http://github.com/alibaba/tengine/commit/5db1b4d46aa1ad050331e60c7ac731295b053063,fix,1
+http://github.com/alibaba/tengine/commit/6c3d57e7a53fb0940045e38163f035fff0ff66b5,fix,1
+http://github.com/alibaba/tengine/commit/7a6ec41d8bc104e8bf2bb2f2950a3a8d567b0447,fix,1
+http://github.com/alibaba/tengine/commit/dbe6e9fb711878d70a627d2eca9126d9d7cf0263,fixed warning,0
+http://github.com/Arcank/nimbus/commit/0c2a43ca2922cbda6916a97cee4bef8cfbfc67c2,fixes strict warning,0
+http://github.com/Arcank/nimbus/commit/1b54f1fb166ab532be0975a84ffd56193068813e,"possibly bug, or just more explicit code",1
+http://github.com/Arcank/nimbus/commit/2b56e090ba91c74315e3f00123b6094e225dde73,fix,1
+http://github.com/Arcank/nimbus/commit/39445d4e3cb1e680b6ec3c3615e697307fcc18d9,fix,1
+http://github.com/Arcank/nimbus/commit/4a9267ee77abd1e0938543031628c74d236acf0a,fix,1
+http://github.com/Arcank/nimbus/commit/4d55378c47d50a909ec4ee4a31ad59a28ac52599,fix,1
+http://github.com/Arcank/nimbus/commit/53ce240d76add2e2fe5417fdafafd4337ea3b0ec,feature,0
+http://github.com/Arcank/nimbus/commit/55c2333c17bc9eb06e64c8f446269accfd6200a9,fix,1
+http://github.com/Arcank/nimbus/commit/620d9580c9e401168996b17ea00e2dc77e43e245,feature,0
+http://github.com/Arcank/nimbus/commit/8691a0a009fe39872c756c8aeb06887a584dc18b,feature,0
+http://github.com/AutoMapper/AutoMapper/commit/05109446550dd8cc35d222ff11201867c701c226,fix,1
+http://github.com/AutoMapper/AutoMapper/commit/0a5b47f497789dfb239af0966c90c845fb8f5532,possibly bug,1
+http://github.com/AutoMapper/AutoMapper/commit/20054717a055d7ced4e5daa66151b7cf0ab6a0df,fixed build,0
+http://github.com/AutoMapper/AutoMapper/commit/2a9361439752ceb0daa852aa86e9b8c078096147,fix,1
+http://github.com/AutoMapper/AutoMapper/commit/2eb1339249cc3cdeb734e8d93b34659fe9920d34,feature,0
+http://github.com/AutoMapper/AutoMapper/commit/4d526264f2d16db3ca68f52893657096982d979c,fix,1
+http://github.com/AutoMapper/AutoMapper/commit/6ff6c50bd27bb33076fb3196f4b409507a33a1d1,"feature, possibly also unrelated bug",1
+http://github.com/AutoMapper/AutoMapper/commit/a03b6ee36175620d1f22fd1148fe2086dd0195b3,fix,1
+http://github.com/AutoMapper/AutoMapper/commit/a086b9eebc4dbe2b4fb754c76bb268da0debad14,fix,1
+http://github.com/AutoMapper/AutoMapper/commit/b0e01e749a777738d8d0df2eb315a339ee519d76,fix,1
+http://github.com/Chenkaiang/XVim/commit/0245026e393d0f95d8f8534a753f68c4ffe5d80f,"not a bug, feature fix (proposal)",0
+http://github.com/Chenkaiang/XVim/commit/032a1abe48bd2b92645876f986a70724196c93f9,added feature (new color in syntax highlighting),0
+http://github.com/Chenkaiang/XVim/commit/15152a6ff82471e0dfd592ea94f0aec832d60792,fix,1
+http://github.com/Chenkaiang/XVim/commit/16a3d5d298bd0427e74e8f283c00a994b97b53ce,fix,1
+http://github.com/Chenkaiang/XVim/commit/2733f15ef93092e86f65ed551fa408cd42a93084,bugfix memory leaks,1
+http://github.com/Chenkaiang/XVim/commit/29e8a92d6b2a54212113cb7e69957cec660eeac2,improvement,0
+http://github.com/Chenkaiang/XVim/commit/32e1cd63c0656e245bcae6b28ed6c013fcaed3cc,"this is a feature fix, ",1
+http://github.com/Chenkaiang/XVim/commit/4b7742ed627a2c4b8140cd73779e5af164644867,fix,1
+http://github.com/Chenkaiang/XVim/commit/51b2833c1c381550f753f1b15ab05e8858bd122e,fix,1
+http://github.com/Chenkaiang/XVim/commit/5223e92c2ed490cc72bb2cd34f33a2544a0410ff,bugfix memory leaks,1
+http://github.com/clojure/core.logic/commit/2406f2d31ebebcdaca4b3dd9c302b9b9688c6e0c,feature named fixc,0
+http://github.com/clojure/core.logic/commit/3154568a8996d0ebe3de25df163db61e85515905,fix in example,1
+http://github.com/clojure/core.logic/commit/4547c7257c5a540b5395b650e52655756696a875,might be a bug,1
+http://github.com/clojure/core.logic/commit/52c7559c5e825841e089181adbf30c5ae3d03a68,fix,1
+http://github.com/clojure/core.logic/commit/5d4b069c85dc28642f22a01650482f8c1ddcfd06,I think this is feature,0
+http://github.com/clojure/core.logic/commit/65bdedafa827a17eccc33f497d166810fbd162f2,feature,0
+http://github.com/clojure/core.logic/commit/756771aa990c5b6284595036de231398ee4819ca,feature,0
+http://github.com/clojure/core.logic/commit/858583237c77c142a2a4e49ba7b6c11f072ef503,"says fix typo, but actually a fix",1
+http://github.com/clojure/core.logic/commit/9326c7b724ec9daf88d6e4cf0d81e01161dcdbab,fix,1
+http://github.com/clojure/core.logic/commit/979308570786c30291feb43b111306e5ffa8c0a1,just added TODO,0
+http://github.com/docpad/docpad/commit/05de0ed1f06bb11e09783534a712386e60f14400,fix & feature,1
+http://github.com/docpad/docpad/commit/1c3640ffb9b8a1727d41625a6a80588f27f680ff,fixed unit tests,0
+http://github.com/docpad/docpad/commit/24872e9cd57d8e7ce3351c97657943f826f198b4,fix,1
+http://github.com/docpad/docpad/commit/38431cd0773b1967d5fe5892652a585d6b9c0eb0,fix & feature,1
+http://github.com/docpad/docpad/commit/4864397df52454a24a41029b7b9339c70b0a8caa,bugfix,1
+http://github.com/docpad/docpad/commit/563793aff7b19062ecfc39e6a1ec26063bb93e45,fixed typo in code;-D,1
+http://github.com/docpad/docpad/commit/610525940ab53c8fe0f9567c8a2c3f0be6d0adad,"fix, part of feature",1
+http://github.com/docpad/docpad/commit/697f4185757b4b5aecd054d9514504c4c32714f4,fix + features,1
+http://github.com/docpad/docpad/commit/894b56a6ffe67825ef7d8e2282ae5752c27f59f7,"fixes tests, refactoring",0
+http://github.com/docpad/docpad/commit/b9ca4ca2816dc7451c7e47f65ab3772d67f268a4,performance improvement,0
+http://github.com/faylang/fay/commit/3d5148e389c4eb92cc5cc00219793f4c6cf85cde,fix warning,0
+http://github.com/faylang/fay/commit/41700e72f46281f56934400265e8ce583604c53f,fix FFI api,1
+http://github.com/faylang/fay/commit/712bfd41d426c767a5a413ecc24911e93bcf0b54,fix,1
+http://github.com/faylang/fay/commit/974fff51e0d0c98b667700d2c517af4d40a2adee,feature,0
+http://github.com/faylang/fay/commit/b0836494a4b3494f5b62aa00c0f7f4dea124fc57,fix,1
+http://github.com/faylang/fay/commit/b37897f3865693853af848ade4d461fb3d7719cd,fix,1
+http://github.com/faylang/fay/commit/bdc1aebb04e58d44a537d52573e63a4c63a6e1b0,removed unused compiler errors,0
+http://github.com/faylang/fay/commit/d527586ee7ac5646068ffb885198814e877d8fca,feature,0
+http://github.com/faylang/fay/commit/d7340a55f0c5ee903ae19bc3a733907127eb4d99,fixed TODO,0
+http://github.com/faylang/fay/commit/d8e5a49085f18cd903070a71a354e77cfeb34ff0,"refactoring
+",0
+http://github.com/GeertJohan/gorp/commit/071ca908b6e5049351dfbd6242d800e53463cce6,adds feature,0
+http://github.com/GeertJohan/gorp/commit/10139f1c2e9c473bbf2412b34ee76d6427c659a6,fixes a bug,1
+http://github.com/GeertJohan/gorp/commit/3aa59f87d2d4ba141c81f0d892fc041a25ef649d,adds feature,0
+http://github.com/GeertJohan/gorp/commit/3afb63081ce01a7a8f8c90aa2a7ad9429a23e470,feature  ,0
+http://github.com/GeertJohan/gorp/commit/8b3bb71379ffcb2dbb5e19d532e95f65b3f23bf0,not a bug in the language,0
+http://github.com/GeertJohan/gorp/commit/947c742d04edf30b295e34a77676eee2c609dbeb,fixes error reporting,1
+http://github.com/GeertJohan/gorp/commit/af8337d4a1d0d35911c3cd1a8d4be58bf518fa03,"features, fixes in tests",1
+http://github.com/GeertJohan/gorp/commit/c1928b018e4e0e05bacdd34fc23514bc1ca6e8c9,docs fixed,0
+http://github.com/GeertJohan/gorp/commit/d0f665773075206460532ba54158979deb4f56ec,feature,0
+http://github.com/GeertJohan/gorp/commit/d66806cf5ce4950440f30e03698ab92762cc0220,remove debug print,0
+http://github.com/K2InformaticsGmBH/proper/commit/0933e421f5f504eb098e42f05e8cda288d67a80b,could be fix,1
+http://github.com/K2InformaticsGmBH/proper/commit/09f75f469a83c7b4a3a5134d8b25f82d9f87724d,fix,1
+http://github.com/K2InformaticsGmBH/proper/commit/0e43b65049ef98fbc4b959b88854bc17733d0cb2,fix & features,1
+http://github.com/K2InformaticsGmBH/proper/commit/13dbb5687464c8311de3be3e092d86d8bfb650c3,feature,0
+http://github.com/K2InformaticsGmBH/proper/commit/1bfe47835fac48b76e96fc920db38fcda5cedffc,could be fix,1
+http://github.com/K2InformaticsGmBH/proper/commit/260be7807abad2302323213bf0289fbd09525adf,might be a bug amongst features,1
+http://github.com/K2InformaticsGmBH/proper/commit/42f74303f4a11e785b50c0790355b327883d4195,fixes to unit tests,0
+http://github.com/K2InformaticsGmBH/proper/commit/57c3226147127fc860fa7dec9ec60ec98bb01a79,feature,0
+http://github.com/K2InformaticsGmBH/proper/commit/628cc94ed6da619e47feecd36da784fbf14d8999,looks more like added missing functionality,0
+http://github.com/K2InformaticsGmBH/proper/commit/6fb09ce19cef31dfc91ca07face1b78fb8aad5f6,fix,1
+http://github.com/lfe/lfe/commit/0e6eca5d06f99d3cefd278eb4e7ca705b499b663,"feature, warnings as errors",0
+http://github.com/lfe/lfe/commit/0e98c7e8e7d92d64d9aa2214db1d3c48cfb2c398,removed unnecessary code,0
+http://github.com/lfe/lfe/commit/14180d6f839760ce071fb49d07f21dfaaa612795,internal fixes,1
+http://github.com/lfe/lfe/commit/5387e850af5c2d20605658a3dabe5e69a8bec5d1,fix,1
+http://github.com/lfe/lfe/commit/81b48ac826176b9899d0d34f672390d29bf657a9,feature,0
+http://github.com/lfe/lfe/commit/8d6d4b0ea0474b532d6e70af77d9223565bfe8fd,fixed pretty printer,1
+http://github.com/lfe/lfe/commit/9ae33afc8aff8a8cdbc02ba1f4a7a4643c33854b,"feature, better error checking",0
+http://github.com/lfe/lfe/commit/ac008d2e71da44cc6f0013db36aff2cb8ea8db98,fix,1
+http://github.com/lfe/lfe/commit/e163397cdf515d653060758d8c8ae593e0ce9104,fixed comments,0
+http://github.com/lfe/lfe/commit/ed42484be60a6bbae825cc88f9b6fab3d3af88fd,fix + feature,1
+http://github.com/magicalpanda/MagicalRecord/commit/00c43427b078b1f22d7bcdd551a7573a70d88e23,feature,0
+http://github.com/magicalpanda/MagicalRecord/commit/080c39ef2e609414880a1550cffad3fad9cb2870,bugfix,1
+http://github.com/magicalpanda/MagicalRecord/commit/45d764a58d4b11c0cbdeb10fa442a18680e492ff,"not a bug, cleanup code is debug only",1
+http://github.com/magicalpanda/MagicalRecord/commit/4c374be5a7e1a2cc94b2bdb4c7d4b0cfce6ddf8a,bugfix memory leaks,1
+http://github.com/magicalpanda/MagicalRecord/commit/5341e84c4c0c23e7a650ec3f433b564e4a3357d8,bugfix race,1
+http://github.com/magicalpanda/MagicalRecord/commit/7643c5af0504ee90af08a2b85f68b8b28d4c7ddd,bugfix,1
+http://github.com/magicalpanda/MagicalRecord/commit/b11a797379b358448e499e5ae9529f953765d23f,conversion/ refactoring,0
+http://github.com/magicalpanda/MagicalRecord/commit/bee9f4a3cf9b9ee3301da7ccb2e450eef102c1e9,fixing data import tests,0
+http://github.com/magicalpanda/MagicalRecord/commit/d56b7ecd5fd9fe4fd1e2efbae616cda4562a7a01,bugfix memory leak,1
+http://github.com/magicalpanda/MagicalRecord/commit/e048f91c71798d10c8709f19687faed01895d8ca,fixed comments,0
+http://github.com/MerlinDMC/gocode/commit/0543ba408f2eecea2c425ef83735303d7898d295,"bug, xplatform compatibility",1
+http://github.com/MerlinDMC/gocode/commit/1863540842c9a5bb532d8fd75de6ede6cf5068ac,bug,1
+http://github.com/MerlinDMC/gocode/commit/3f451e9986646690b3f70ac53641b92cdfbf89f4,build fix,0
+http://github.com/MerlinDMC/gocode/commit/633e5ad362943a6eb043fa68da2963929466b796,bug,1
+http://github.com/MerlinDMC/gocode/commit/8b34e461970723c63275268fa12ba9dcc8fca33a,"fixed build due to package rename, so technically not lang issue",0
+http://github.com/MerlinDMC/gocode/commit/975a2fc86646f4afae2b8414a8457f5f52c935b5,"features, fixes TODOs",0
+http://github.com/MerlinDMC/gocode/commit/9e35e4b7df146e3f1610380af59ea4cb3672540f,i think bugfix,1
+http://github.com/MerlinDMC/gocode/commit/b79a49fc57b65ac63f2b3d02b60734d984da6634,bug,1
+http://github.com/MerlinDMC/gocode/commit/bd72d4bc5941f538c3f789fb9a3d54a43043800b,"features, missing TODO",1
+http://github.com/MerlinDMC/gocode/commit/f36ed6ec9caf15cc7cf7fe8ec8d631ee34748d97,added test,0
+http://github.com/mpeltonen/sbt-idea/commit/0395e37d2cde8732ca09b6f53e4313e88f3b3c22,bugfix?feature?,1
+http://github.com/mpeltonen/sbt-idea/commit/1125a8b760810f682a3c929534e3d235a27e1245,feature,0
+http://github.com/mpeltonen/sbt-idea/commit/18804a91672b28cb9bf7a38fa1fe28d91f4ba30a,formatting fixes,0
+http://github.com/mpeltonen/sbt-idea/commit/3f308d97a1c48423d23733b1361484f04228cdda,bugfix,1
+http://github.com/mpeltonen/sbt-idea/commit/4f7acd829eb4b330ae263404dd56c8fb27b85993,feature,0
+http://github.com/mpeltonen/sbt-idea/commit/6a707e2887bb385a49d6ddd5d1991f95ff4675e4,"I think not a bug, fix for other tool to work (abs path instead of rel)",0
+http://github.com/mpeltonen/sbt-idea/commit/831cd1666015ed07bd218995e8ab9b760739a380,feature,0
+http://github.com/mpeltonen/sbt-idea/commit/b7c3895a7b3a1dd7489c9f084e4d9e7366152747,feature,0
+http://github.com/mpeltonen/sbt-idea/commit/cda48814e7257587a5787e7a6757c210d4017eab,hack,0
+http://github.com/mpeltonen/sbt-idea/commit/fc13c0ebcb184a5fde3ae0eb17fe97e91555c107,"bugfix? As in wrong functionality, not language",1
+http://github.com/MythTV/mythtv/commit/0003fa6448cdd50a5b692625f8280559f58b0710,fix segfault,1
+http://github.com/MythTV/mythtv/commit/008c38e61389e90b4f58305770990c0e75b3b8a9,fix,1
+http://github.com/MythTV/mythtv/commit/00d899b6c93e1c63f097d44afa7a3d9c9295aa76,fixes to compile on BSD,0
+http://github.com/MythTV/mythtv/commit/02b671cea24e68eb0047ec6245463c8015745191,fixes to compile with never version,0
+http://github.com/MythTV/mythtv/commit/02c8992faf15ba002ed774179038c3f92b139d1c,fix,1
+http://github.com/MythTV/mythtv/commit/0384bfe2b2e50d8bc40f58fd8e27779d68880a38,fix,1
+http://github.com/MythTV/mythtv/commit/04798229286ef81b16aaae21a3d425bafcc36dda,fix,1
+http://github.com/MythTV/mythtv/commit/04828d18b995d7f033f60e6f98ff2f792ffcfe9c,feature,0
+http://github.com/plumatic/plumbing/commit/08176c617db0daf4130b748d65524d91c4a28d2f,bugfix,1
+http://github.com/plumatic/plumbing/commit/3a530a0c716210cf80bb833e32eb88909171b1b0,bugfix,1
+http://github.com/plumatic/plumbing/commit/4507a9778e9ebe2512cd1e922315b5d52d2fb2b8,fixing tests,0
+http://github.com/plumatic/plumbing/commit/7afc78579e7ce77a4b1c6000cd199462ba0dd279,possibly a bug,1
+http://github.com/plumatic/plumbing/commit/9761e82ec735d15f0b47045da41f9028c3402a9b,bugfix of a previously seen bugfix,1
+http://github.com/plumatic/plumbing/commit/a0149aba501833dafe57cd35962bb6802fb87fda,"not a bug, better error messages",0
+http://github.com/plumatic/plumbing/commit/b266b4eebbef51f48a87da6c8206463e0ae868b2,docs fixed,0
+http://github.com/plumatic/plumbing/commit/b748c8980cbb6575c673625b4cf4a3f7f139662b,feature,0
+http://github.com/plumatic/plumbing/commit/d34194b3987d2d527e78369744cfa46a0ecaea96,"I think this is a bug, but not labelled as one",1
+http://github.com/plumatic/plumbing/commit/e13175d8c17e8fac5e122663c81606ff7635533c,bugfix,1
+http://github.com/sinclairzx81/typescript.api/commit/02be3bd366d4dcb533a98a3c047772799e6ebac4,"typo in filename, not TS related",0
+http://github.com/sinclairzx81/typescript.api/commit/109ef9b4c0515442cfc979271b3709e43748edad,more like a feature,0
+http://github.com/sinclairzx81/typescript.api/commit/52c7b57392633d4c01d10b99585230d2b048caad,more like feature update,0
+http://github.com/sinclairzx81/typescript.api/commit/5804d573ef6e1364e7daee37fc354a07db617a5d,fixed declaration file,0
+http://github.com/sinclairzx81/typescript.api/commit/654256c47a45764f5356c71b9fd00ae8ae8a897f,signifficant refactoring + attempt to fix a bug,1
+http://github.com/sinclairzx81/typescript.api/commit/660629cfe839280444409e7a62c52e63004766e0,"fix to the NPM build system, not TS related",0
+http://github.com/sinclairzx81/typescript.api/commit/8541d7ca595449570852428edbe647aa00f0d435,"bug, wrong identifier name",1
+http://github.com/sinclairzx81/typescript.api/commit/9f328a239ecfd36d8775b341c83580ff2ea03304,bug,1
+http://github.com/sinclairzx81/typescript.api/commit/a6ef5bcba753175c021e9c5e88885895090c7ec6,perhaps a very large bugfix,1
+http://github.com/yu19930123/ngrok/commit/081a1f7fde6de73f590513bfbd6ca8dada1edd95,"not a bug, fixed how connection args are specified",0
+http://github.com/yu19930123/ngrok/commit/097ec88425ae7daaeb807ba34099fe167a0a704b,fix,1
+http://github.com/yu19930123/ngrok/commit/13be54d4e7262343a004afb512a12e4610533b7a,fix,1
+http://github.com/yu19930123/ngrok/commit/22537c01364b867d0ba335e6024242752a9bda47,"feature, better crash reporting",0
+http://github.com/yu19930123/ngrok/commit/4d08291813a24342972a127fe07facc7df3c655c,fix,1
+http://github.com/yu19930123/ngrok/commit/54751ce3135544e19b950c091229c2436673face,"not a bug, proposal",0
+http://github.com/yu19930123/ngrok/commit/5fd65be3cf7bbbade37b51b9a0e1e84b8f55cf58,fix,1
+http://github.com/yu19930123/ngrok/commit/6a2b9c31b1c8484471b8e140a92ec81de1fce40f,fix,1
+http://github.com/yu19930123/ngrok/commit/bfd7e64d9fdbe902d74cc96d4577b6d5cfaf60a0,bug ,1
+http://github.com/yu19930123/ngrok/commit/d2f3fc844007b54e4caf6a896e273988b27a01b9,fix,1

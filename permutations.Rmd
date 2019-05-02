@@ -1,0 +1,163 @@
+---
+title: "Analysis of the permutations of re-anaysis flags "
+output: html_notebook
+---
+
+First, we calculate the permutations we ar discussing in the paper:
+
+```{r, collapse=TRUE}
+library("knitr")
+library("rmarkdown")
+source("implementation.R")
+
+# array of the flags for permutation
+flags = c(
+  REMOVE_DUPLICATES = 0, 
+  REMOVE_TYPESCRIPT = 0,
+  REMOVE_V8 = 0,
+  USE_AUTHORS_INSTEAD_COMMITTERS = 0,
+  UNCERTAINTY = 0
+)
+
+whitelist = c("00000", "11111")
+
+```
+
+Now loop over all flag permutations and execute those on the whitelist. All permutations will be stored in the `artifact/permutations` directory and identified by a string representing ther flags as numbera `1` o `0`:
+
+```{r}
+permutations = 0
+fails = 0
+id = -1
+# now just loop over all permutations of the flags
+while (!is.null(flags)) {
+    ident = paste(as.integer(flags), collapse = "")
+    knitEnv = nextPermutation()
+    if (!is.na(whitelist) && ! ident %in% whitelist)
+        next()
+    if (is.null(knitEnv))
+        break()
+    id = id + 1
+    # knit the document
+    cat(paste("Executing permutation ", ident, "...\n", sep = ""))
+    permutations <<- permutations + 1
+    tryCatch({
+        WORKING_DIR <<- paste0("./artifact/permutations/", ident)
+        assign("WORKING_DIR", paste0("./artifact/permutations/", ident), knitEnv)
+        rmarkdown::render("./re-analysis.Rmd", "html_document", envir = knitEnv, quiet = T, output_file = paste0("./artifact/permutations/", ident, "/main.html"), output_dir = WORKING_DIR)        
+        cat("    PASS\n")
+    }, error = function(e) {
+        fails <<- fails + 1
+        print(e)
+    })
+}
+cat("ALL DONE.\n")
+cat(paste("permutations: ", permutations, "\n", sep = ""))
+cat(paste("fails:        ", fails, "\n", sep = ""))
+```
+
+When the permutaions have been geneated, we must analyze them. Clear the flags and set the working directory to permutations root:
+
+```{r, collapse=TRUE}
+flags = c(
+  REMOVE_DUPLICATES = 0, 
+  REMOVE_TYPESCRIPT = 0,
+  REMOVE_V8 = 0,
+  USE_AUTHORS_INSTEAD_COMMITTERS = 0,
+  UNCERTAINTY = 0
+)
+
+WORKING_DIR = "./artifact/permutations"
+```
+
+First, get the permutation results calculated previously:
+
+- `est` = value of the estimate
+- `se` = standard error
+- `pv` = `NA` if the result was not signifficant, p-value limit otherwise)
+
+For bootstrap, we get `est`, `se` and `sig` and `sigCons` which are boolean vectors telling us whether the results were significant.
+
+```{r}
+loadPermutation = function(b, name, permutation) {
+    lWeighted = read.csv(paste0(permutation, "/Data/languages_weighed.csv"))
+    rownames(lWeighted) = lWeighted$X
+    lWeighted = lWeighted %>% dplyr::select(-X)
+    lZeroSum = read.csv(paste0(permutation, "/Data/languages_zeroSum.csv"))
+    rownames(lZeroSum) = lZeroSum$X
+    lZeroSum = lZeroSum %>% dplyr::select(-X)
+    bootstrapFilename = paste0(permutation, "/Data/languages_bootstrap.csv")
+    if (file.exists(bootstrapFilename)) {
+        lBootstrap = read.csv(bootstrapFilename)
+        rownames(lBootstrap) = lBootstrap$X
+        lBootstrap = lBootstrap %>% dplyr::select(-X)
+    } else {
+        lBootstrap = NULL
+    }
+    # and create the result list
+    list(
+        name = name,
+        weighted = lWeighted,
+        zeroSum = lZeroSum,
+        bootstrap = lBootstrap
+    )
+}
+```
+
+Let's now look at all permutations and loat them:
+
+```{r}
+loadAllPermutations = function(baseDir, b = baseline) {
+    dirs = list.dirs(baseDir, recursive = F)
+    result = list()
+    for (d in dirs) {
+        pName = strsplit(d, "/")
+        pName = pName[[1]][[length(pName[[1]])]]
+        if (nchar(pName) != length(flags))
+            next()
+        tryCatch({
+            result[[pName]] = loadPermutation(b, pName, d)
+        }, error = function(e) {
+            print(e)
+            cat("Permutation ", pName, "FAIL\n")
+        })
+    }
+    cat("Total valid permutations: ", length(result))
+    result
+}
+permutations = loadAllPermutations(WORKING_DIR)
+```
+
+Let's now create the skeleton for teh RQ1 table in the paper:
+
+```{r}
+result = baselineFSE_RQ1()
+result = mergeDataFrames(result, baselineCACM_RQ1())
+result = result %>% dplyr::select(FSE_coef, FSE_pv, CACM_coef, CACM_pv)
+
+repetition = permutations[["00000"]]$weighted %>% dplyr::select(repetition_coef = coef, repetition_pv = pVal)
+result = mergeDataFrames(result, repetition)
+
+cleaned = permutations[["11111"]]$weighted %>% dplyr::select(clean_coef = coef, clean_pv = pVal, adjusted_fdr = pVal_fdr, adjusted_bonf = pVal_bonf)
+result = mergeDataFrames(result, cleaned)
+
+zeroSum = permutations[["11111"]]$zeroSum %>% dplyr::select(zeroSum_coef = coef, zeroSum_pv = pVal_bonf)
+result = mergeDataFrames(result, zeroSum)
+
+bootstrap = permutations[["11111"]]$bootstrap %>% dplyr::select(bootstrap_coef = coef, bootstrap_sig = sigCons)
+result = mergeDataFrames(result, bootstrap)
+
+result
+```
+
+And output it to the rq1 table:
+
+```{r}
+output_RQ1_table_repetition(result)
+output_RQ1_table_reanalysis(result)
+```
+
+```{r}
+remove(WORKING_DIR)
+```
+
