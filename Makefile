@@ -21,7 +21,7 @@ artifact:
 	echo "Threats to validity evidence"
 	Rscript --vanilla -e 'library(rmarkdown); rmarkdown::render("threats_to_validity.Rmd", "html_document")'
 paper:
-	echo "Building the paper"
+    echo "Building the paper"
 	
 	
 	
