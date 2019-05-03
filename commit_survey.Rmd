@@ -138,13 +138,17 @@ write.csv(data, file=paste0(WORKING_DIR, "/Data/commit_survey_results.csv"))
 falsePositives <- nrow(data[data$paper == 1 & data$label == 0,])
 falseNegatives <- nrow(data[data$paper == 0 & data$label == 1,])
 
-cat(paste("Percentage of false positives (Paper vs Devs): ", falsePositives / nrow(buggycommits), "\n"))
-cat(paste("Percentage of false negatives: (Paper vs Devs)", falseNegatives / nrow(nonbuggycommits), "\n\n"))
+out("commitsFalsePositives",  round(falsePositives / nrow(buggycommits) * 100, 1))
+out("commitsFalseNegatives", round(falseNegatives / nrow(nonbuggycommits) * 100, 1))
+
+#cat(paste("Percentage of false positives (Paper vs Devs): ", falsePositives / nrow(buggycommits), "\n"))
+#cat(paste("Percentage of false negatives: (Paper vs Devs)", falseNegatives / nrow(nonbuggycommits), "\n\n"))
 ```
 
 ```{r}
 unanimous_falsePositives <- nrow(data[data$paper == 1 & data$score == 0,])
-cat("Percentage of false positives upon which developers unanimously agreed: ", unanimous_falsePositives / falsePositives)
+out("commitsUnanimousFalsePositives", round(unanimous_falsePositives / falsePositives * 100, 1))
+#cat("Percentage of false positives upon which developers unanimously agreed: ", unanimous_falsePositives / falsePositives)
 ```
 
 ```{r}
@@ -293,6 +297,11 @@ for (first in (1:(numDevs - 1))) {
 summary(kvalue)
 summary(kpvalue)
 summary(ksize)
+out("commitsKappaMedian", round(median(kvalue), 3))
+out("commitsKappaMin", round(min(kvalue), 3))
+out("commitsKappaMax", round(max(kvalue), 3))
+out("commitsKappaPValMedian", round(median(kpvalue), 3))
+out("commitsKappaPVal3rd", round(quantile(kpvalue, 0.75), 3))
 ```
 
 Ok, all of our kappas are positive. Most of the p-values are also very small. 
@@ -300,5 +309,7 @@ Ok, all of our kappas are positive. Most of the p-values are also very small.
 ```{r}
 boxplot(kvalue)
 boxplot(kpvalue)
+sort(kpvalue)
+
 ```
 
