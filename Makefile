@@ -17,5 +17,5 @@ artifact:
 	Rscript --vanilla -e 'library(rmarkdown); rmarkdown::render("commit_survey.Rmd", "html_document")'
 	Rscript --vanilla -e 'library(rmarkdown); rmarkdown::render("threats_to_validity.Rmd", "html_document")'
 .PHONY: paper
-paper:
+paper: artifact
 	cd paper && pdflatex main && bibtex main && pdflatex main && pdflatex main
