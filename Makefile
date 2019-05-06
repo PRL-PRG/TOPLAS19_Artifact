@@ -19,3 +19,7 @@ artifact:
 .PHONY: paper
 paper: artifact
 	cd paper && pdflatex main && bibtex main && pdflatex main && pdflatex main
+.PHONY: setup
+setup:
+	Rscript --vanilla -e 'library(rmarkdown); rmarkdown::render("system_setup.Rmd", "html_document")'
+

@@ -1,0 +1,36 @@
+---
+title: "System Setup"
+output: html_notebook
+---
+
+> This script has been tested on Ubuntu 17.10 with passwordless sudo. It must be updated for other systems.
+
+First we install the non-R dependencies:
+
+```{bash}
+sudo apt-get install tcsh
+```
+
+Then install the required R packages to analyze the data:
+
+```{r}
+install.packages(c(
+    "car",
+    "data.table",
+    "assertthat",
+    "fst",
+    "stringr",
+    "plyr",
+    "ggplot2",
+    "ggrepel",
+    "scales",
+    "xtable",
+    "MASS",
+    "gplots",
+    "dplyr",
+    "gridExtra",
+    "grid",
+    "tidyr"
+))
+
+```
