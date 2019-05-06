@@ -3,7 +3,7 @@ all: paper
 .PHONY: clean
 clean:
 	echo "Cleaning all generated files..."
-	rm -rf *~ *.bbl *.blg *.dvi *.aux *.log  *.out *.html
+	rm -rf *~ paper/*.bbl paper/*.blg paper/*.dvi paper/*.aux paper/*.log  paper/*.out *.html
 	rm -rf original/sqlDump
 	rm -rf original/R_code
 	rm -rf artifact
