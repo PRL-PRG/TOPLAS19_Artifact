@@ -1,64 +1,17 @@
 ---
 title: "Analysis of the permutations of re-anaysis flags "
-output: html_notebook
+output: html_document
 ---
 
-First, we calculate the permutations we ar discussing in the paper:
-
-```{r, collapse=TRUE}
-library("knitr")
-library("rmarkdown")
-source("implementation.R")
-
-# array of the flags for permutation
-flags = c(
-  REMOVE_DUPLICATES = 0, 
-  REMOVE_TYPESCRIPT = 0,
-  REMOVE_V8 = 0,
-  USE_AUTHORS_INSTEAD_COMMITTERS = 0,
-  UNCERTAINTY = 0
-)
-
-whitelist = c("00000", "11111")
-
-```
-
-Now loop over all flag permutations and execute those on the whitelist. All permutations will be stored in the `artifact/permutations` directory and identified by a string representing ther flags as numbera `1` o `0`:
-
-```{r}
-permutations = 0
-fails = 0
-id = -1
-# now just loop over all permutations of the flags
-while (!is.null(flags)) {
-    ident = paste(as.integer(flags), collapse = "")
-    knitEnv = nextPermutation()
-    if (!is.na(whitelist) && ! ident %in% whitelist)
-        next()
-    if (is.null(knitEnv))
-        break()
-    id = id + 1
-    # knit the document
-    cat(paste("Executing permutation ", ident, "...\n", sep = ""))
-    permutations <<- permutations + 1
-    tryCatch({
-        WORKING_DIR <<- paste0("./artifact/permutations/", ident)
-        assign("WORKING_DIR", paste0("./artifact/permutations/", ident), knitEnv)
-        rmarkdown::render("./re-analysis.Rmd", "html_document", envir = knitEnv, quiet = T, output_file = paste0("./artifact/permutations/", ident, "/main.html"), output_dir = WORKING_DIR)        
-        cat("    PASS\n")
-    }, error = function(e) {
-        fails <<- fails + 1
-        print(e)
-    })
-}
-cat("ALL DONE.\n")
-cat(paste("permutations: ", permutations, "\n", sep = ""))
-cat(paste("fails:        ", fails, "\n", sep = ""))
+```{bash}
+Rscript --vanilla generate_permutations.R
 ```
 
 When the permutaions have been geneated, we must analyze them. Clear the flags and set the working directory to permutations root:
 
 ```{r, collapse=TRUE}
+source("implementation.R")
+
 flags = c(
   REMOVE_DUPLICATES = 0, 
   REMOVE_TYPESCRIPT = 0,

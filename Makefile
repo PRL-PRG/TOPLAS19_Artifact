@@ -1,28 +1,21 @@
-all:
-	echo "Building the 
+all: paper
+	echo "Done"
+.PHONY: clean
 clean:
+	echo "Cleaning all generated files..."
 	rm -rf *~ *.bbl *.blg *.dvi *.aux *.log  *.out *.html
 	rm -rf original/sqlDump
 	rm -rf original/R_code
 	rm -rf artifact
+.PHONY: artifact
 artifact:
-	echo "Preparig the orginal artifact"
-	Rscript --vanilla -e 'library(rmarkdown); rmarkdown::render("orginal_arifact.Rmd", "html_document")'
-	echo "Repetition of the original paper"
-	Rscript --vanilla -e 'library(rmarkdown); rmarkdown::render("repetion.Rmd", "html_document")'
-	echo "Re-analysis of the first research question"
+	Rscript --vanilla -e 'library(rmarkdown); rmarkdown::render("original_artifact.Rmd", "html_document")'
+	Rscript --vanilla -e 'library(rmarkdown); rmarkdown::render("repetition.Rmd", "html_document")'
 	Rscript --vanilla -e 'library(rmarkdown); rmarkdown::render("re-analysis.Rmd", "html_document")'
-	echo "Selected filtering and methods flas"
 	Rscript --vanilla -e 'library(rmarkdown); rmarkdown::render("permutations.Rmd", "html_document")'
-	echo "Commits missng from the original paper"
 	Rscript --vanilla -e 'library(rmarkdown); rmarkdown::render("missing_commits.Rmd", "html_document")'
-	echo "Commit cassifiation survey"
 	Rscript --vanilla -e 'library(rmarkdown); rmarkdown::render("commit_survey.Rmd", "html_document")'
-	echo "Threats to validity evidence"
 	Rscript --vanilla -e 'library(rmarkdown); rmarkdown::render("threats_to_validity.Rmd", "html_document")'
+.PHONY: paper
 paper:
-    echo "Building the paper"
-	
-	
-	
-
+	cd paper && pdflatex main && bibtex main && pdflatex main && pdflatex main

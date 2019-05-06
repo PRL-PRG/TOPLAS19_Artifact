@@ -487,25 +487,3 @@ baselineCACM_RQ1 = function() {
     cacmPVal = c(NA, 0.05, 0.01, 0.001)[c(3,3,3,3,3,2,3,0,2,0,0,0,0,0,2,1,1,0,3,0,3,3) + 1]
     data.frame(CACM_coef = cacmEstimate, CACM_se = cacmStdErr, CACM_pv = cacmPVal, row.names = langnames)
 }
-
-# Function which moves the flags vector to new permutation in a way similar to binary increment. Returns the environment in which the notebook should be rendered, or NULL if all permutations were exhausted.
-nextPermutation = function() {
-    # construct the environment
-    e = new.env()
-    for (i in 1:length(flags))
-        assign(names(flags)[[i]], flags[[i]], e)
-    # increment flags
-    i = 1
-    while (i <= length(flags)) {
-        flags[[i]] <<- ! flags[[i]]
-        if (flags[[i]] == T)
-            return(e)
-        i = i + 1
-    } 
-    flags <<- NULL
-    e
-}
-
-
-
-

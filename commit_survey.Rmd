@@ -138,8 +138,8 @@ write.csv(data, file=paste0(WORKING_DIR, "/Data/commit_survey_results.csv"))
 falsePositives <- nrow(data[data$paper == 1 & data$label == 0,])
 falseNegatives <- nrow(data[data$paper == 0 & data$label == 1,])
 
-out("commitsFalsePositives",  round(falsePositives / nrow(buggycommits) * 100, 1))
-out("commitsFalseNegatives", round(falseNegatives / nrow(nonbuggycommits) * 100, 1))
+out("commitsFalsePositives",  paste0(round(falsePositives / nrow(buggycommits) * 100, 1),"\\%"))
+out("commitsFalseNegatives", paste0(round(falseNegatives / nrow(nonbuggycommits) * 100, 1), "\\%"))
 
 #cat(paste("Percentage of false positives (Paper vs Devs): ", falsePositives / nrow(buggycommits), "\n"))
 #cat(paste("Percentage of false negatives: (Paper vs Devs)", falseNegatives / nrow(nonbuggycommits), "\n\n"))
@@ -147,7 +147,7 @@ out("commitsFalseNegatives", round(falseNegatives / nrow(nonbuggycommits) * 100,
 
 ```{r}
 unanimous_falsePositives <- nrow(data[data$paper == 1 & data$score == 0,])
-out("commitsUnanimousFalsePositives", round(unanimous_falsePositives / falsePositives * 100, 1))
+out("commitsUnanimousFalsePositives", paste0(round(unanimous_falsePositives / falsePositives * 100, 1), "\\%"))
 #cat("Percentage of false positives upon which developers unanimously agreed: ", unanimous_falsePositives / falsePositives)
 ```
 
@@ -301,7 +301,7 @@ out("commitsKappaMedian", round(median(kvalue), 3))
 out("commitsKappaMin", round(min(kvalue), 3))
 out("commitsKappaMax", round(max(kvalue), 3))
 out("commitsKappaPValMedian", round(median(kpvalue), 3))
-out("commitsKappaPVal3rd", round(quantile(kpvalue, 0.75), 3))
+out("commitsKappaPValThird", round(quantile(kpvalue, 0.75), 3))
 ```
 
 Ok, all of our kappas are positive. Most of the p-values are also very small. 

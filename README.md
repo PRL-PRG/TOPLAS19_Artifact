@@ -4,27 +4,35 @@ This repository contains the artifact and the paper.
 
 ## Artifact Overview
 
-### `.` 
+`.` 
 
 The root directory contains this readme, the makefile and R notebooks and implementation files in R which take the input data and produce the numbers, tables and figures for the paper. 
 
-### `original`
+`paper`
+
+Contains the LaTEX source code of the TOPLAS paper. The paper pdf is generated as part of the artifact since the artifact generatres the numbers, tables and figures used in the paper.
+
+`original`
 
 Contains the compressed artifact of the original paper as it was obtained. 
 
-### `tools`
+`tools`
 
 Contains tools we have used to re-gather the projects mentioned in the original paper for a thorough analysis and the code for the webapp for the survey asking developers to classify commits as buggy vs non-buggy.
 
-> While the complete source code is provided, these tools are not executed as part of the artifact due to their non-deterministic nature (github projects may be taken down, etc.). Complete dump of the data we have downloaded from the github is too large to be 
+> While the complete source code is provided, these tools are not executed as part of the artifact due to their non-deterministic nature (github projects may be taken down, etc.). Complete dump of the data we have downloaded from the github is too large to be included as part of the artifact, but can be downloaded from [our servers](http://violet.ele.fit.cvut.cz/TOPLAS19/inputData). It contains downloaded commits and file snapshots for the projects we have matched which were later used for the language classification and missing commits analysis.
 
-### `input_data`
+`input_data`
 
-Contains the aggregated data obtained from the above mentioned tools. 
-
-Contains the 
+Contains the aggregated data obtained from the above mentioned tools.
 
 ## Running the artifact
+
+> The artifact has been tested on Ubuntu 17.10, i7-7700, 64GB RAM and 1TB NVMe disk. THe following steps are necessary  
+
+
+
+
 
 The artifact can be executed by invoking the `make` command from its root dir. Make then executes the markdown files which in turn load the input data, perform the analyses and produce all the tables, graphs and numbers used in the paper. Brief description of the notebooks and the order in which they are executed follows:
 
