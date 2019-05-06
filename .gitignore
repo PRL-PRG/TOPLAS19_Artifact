@@ -1,3 +1,16 @@
 *.html
+*.aux
+*.bbl
+*.blg
+*.dvi
+*.log
+*.out
+*.cb
+*.cb2
+paper/main.pdf
 artifact
+original/sqlDump
+original/R_code
+
+
 
