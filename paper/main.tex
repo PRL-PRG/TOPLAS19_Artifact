@@ -609,29 +609,18 @@ classification, but since that classification is wrong they are not
 meaningful.
 
 %-----------------------------------------------------------
-
+%-----------------------------------------------------------
 \begin{table}[h!]\center
 \caption{Negative Binomial Regression for Language Classes}
-\begin{tabular}{@{}r||ll||ll|ll@{}}  \hline
-\rule{0pt}{3ex} & \multicolumn{2}{c||}{\normalsize (a) Original} & \multicolumn{2}{c}{\normalsize (b) Repetition} & \multicolumn{2}{c}{\normalsize (c) Reclassification}\\[1mm] & Coef & P-val & Coef & P-val & Coef & P-val \\ \hline
-Intercept           & -2.13 & <0.001 &-2.14 &  <0.001 &  -1.85 &  <0.001 \\ 
-            log age & ~0.07 & <0.001 &~0.15 &  <0.001 &  ~0.05 &  0.003 \\ 
-           log size & ~0.05 & <0.001 &~0.05 &  <0.001 &  ~0.01 &  0.552 \\ 
-           log devs & ~0.07 & <0.001 &~0.15 &  <0.001 &  ~0.07 &  <0.001 \\ 
-        log commits & ~0.96 & <0.001 &~2.19 &  <0.001 &  ~1    &  <0.001 \\    \hline\hline
-\tt Fun Sta Str Man & -0.25 & <0.001 &-0.25 &  <0.001 &  -0.27 &  <0.001 \\ 
-\tt Pro Sta Str Man & -0.06 &  <0.05 &-0.06 &   0.039 & \cellcolor{gray!25} -0.03 & \cellcolor{gray!25} 0.24 \\ 
-\tt Pro Sta Wea Unm & ~0.14 & <0.001 &~0.14 &  <0.001 &  ~0.19 &  0 \\ 
-\tt Scr Dyn Wea Man & ~0.04 &  <0.05 &~0.04 &  0.018  &\cellcolor{gray!25} ~0 & \cellcolor{gray!25} 0.86 \\ 
-\tt Fun Dyn Str Man & -0.17 & <0.001 &-0.17 &  <0.001 &   -- &  -- \\ 
-\tt Scr Dyn Str Man &~0.001 &     -- &   ~0 &   0.906 &   -- &  -- \\ 
-\tt Fun Dyn Wea Man &    -- &     -- &   -- &      -- & -0.18 &  <0.001 \\  \hline
-\end{tabular}\label{t5}
+\input{../artifact/repetition/Data/languages_classes_table.tex}\label{t5}
 \medskip \tabledesc{Language classes are combined procedural (Pro),
   functional (Fun), scripting (Scr), dynamic (Dyn), static (Sta), strong
   (Str), weak (Wea), managed (Man), and unmanaged (Unm). Rows marked -- have
   no observation.}
 \end{table}
+%-----------------------------------------------------------
+%-----------------------------------------------------------
+
 
 \subsubsection{Does language defect proneness depend on domain (RQ3)}
 

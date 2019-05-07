@@ -243,6 +243,14 @@ lessThanPvCheck01 = function(x) {
     x
 }
 
+lessThanPvCheck001 = function(x) {
+    x[is.na(x)] = "--"
+    x[x == "NA"] = "--"
+    x[x != "--" & x < 0.001] = "<0.001"
+    x[(x != "--") & x >= 0.001] = paste("\\hphantom{<}", x[(x != "--") & x >= 0.001], sep="")
+    x
+}
+
 prependTyldeToPositiveValues = function(x) {
     x[is.na(x)] = ""
     x[x>=0] = paste("~", x[x >= 0], sep = "")
@@ -415,9 +423,9 @@ output_RQ2_table = function(data, dataReclassified) {
     xx$fseCoef = nasToDashes(prependTyldeToPositiveValues(xx$fseCoef))
     xx$fsePv = lessThanPv(nasToDashes(xx$fsePv))
     xx$usCoef = latexPassFailCell(nasToDashes(prependTyldeToPositiveValues(xx$usCoef)), repetitionPass)
-    xx$usPv = latexPassFailCell(nasToDashes(xx$usPv), repetitionPass)
+    xx$usPv = latexPassFailCell(lessThanPvCheck001(nasToDashes(xx$usPv)), repetitionPass)
     xx$reclassifiedCoef = latexPassFailCell(nasToDashes(prependTyldeToPositiveValues(xx$reclassifiedCoef)), reclassificationPass)
-    xx$reclassifiedPv = latexPassFailCell(nasToDashes(xx$reclassifiedPv), reclassificationPass)
+    xx$reclassifiedPv = latexPassFailCell(lessThanPvCheck001(nasToDashes(xx$reclassifiedPv)), reclassificationPass)
     addtorow <- list()
     addtorow$pos <- list(0, 0, 5)
     addtorow$command <- c(
@@ -428,7 +436,7 @@ output_RQ2_table = function(data, dataReclassified) {
     )
     t = xtable(xx)
     align(t) = c("@{}r", "||l", "l||", "l","l", "|l", "l@{}")
-    print(t, add.to.row = addtorow, include.colnames = F, size = "small", file = paste0(WORKING_DIR, "/Data/languages_classes_table.tex"), sanitize.text.function = latexSanitizer, scalebox = .78, floating = F)
+    print(t, add.to.row = addtorow, include.colnames = F, size = "", file = paste0(WORKING_DIR, "/Data/languages_classes_table.tex"), sanitize.text.function = latexSanitizer, floating = F)
 }
 
 # Creates the table we use for RQ3 which shows the significance and bug affinity for language domains. 
