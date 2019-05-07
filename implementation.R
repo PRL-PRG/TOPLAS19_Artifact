@@ -447,10 +447,11 @@ output_RQ3_table = function(data) {
     
     tD = xtable(data) 
     addToRow = list()
-    addToRow$pos = list(0, 5)
+    addToRow$pos = list(0, 5,11)
     addToRow$command = c(
-        "\\rule{0pt}{3ex} & Coef & p-Val \\\\ \\hline",
-        "\\hline\n \\hline\n"
+        "\\begin{minipage}{4.5cm}\\begin{tabular}{@{}r|rl@{}}  \\hline \n\\rule{0pt}{3ex} & Coef & p-Val \\\\ \\hline",
+        "\\hline\n \\hline\n \\end{tabular}\\end{minipage}&\\begin{minipage}{4.5cm}\\begin{tabular}{@{}r|rl@{}}  \\hline\n \\rule{0pt}{3ex} & Coef & p-Val \\ \\hline \\hline",
+        "\\end{tabular}\\end{minipage}"
     )
     
     align(tD) = c("@{}r","|r","l@{}")

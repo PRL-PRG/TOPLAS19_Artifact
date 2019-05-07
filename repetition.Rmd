@@ -618,7 +618,12 @@ result
 Looking at the results above, none of the domains is significant at level `0.01` so we can say that our tests supports the claim made by the original authors and move to the last RQ. But before doing just that, we should generate a lateX table from our result since this table goes into the paper:
 
 ```{r}
-output_RQ3_table(result)
+result$pVal = lessThanPvCheck001(round(result$pVal, 2))
+for (i in 1:nrow(result)) {
+    out(paste0("rqIIIname",as.roman(i)), rownames(result)[[i]])
+    out(paste0("rqIIIcoef", as.roman(i)), result$coef[[i]])
+    out(paste0("rqIIIpv", as.roman(i)), result$pVal[[i]])
+}
 ```
 
 # What is the relation between language and bug category? (chapter 3, RQ4)
