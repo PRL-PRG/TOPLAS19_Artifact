@@ -29,7 +29,7 @@ setup:
 	sudo apt install git-lfs
 	git checkout -f HEAD
 	sudo apt install r-base libcurl4-openssl-dev pandoc tcsh
-	mkdir .R
+	mkdir -p .R
 	Rscript setup_r.R
 # installs necessary dependenciesfor building the artifact and the paper (i.e. the entirety of tex) 
 .PHONY: setup_tex
