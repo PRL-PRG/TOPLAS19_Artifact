@@ -26,21 +26,21 @@ paper: artifact
 .PHONY: setup
 setup: R_LIBS_USER=./.R
 setup:
-    sudo apt install git-lfs
-    git checkout -f HEAD
-    sudo apt install r-base libcurl14-openssl-dev pandoc tcsh
-    mkdir .R
-    Rscript setup_r.R
+	sudo apt install git-lfs
+	git checkout -f HEAD
+	sudo apt install r-base libcurl14-openssl-dev pandoc tcsh
+	mkdir .R
+	Rscript setup_r.R
 # installs necessary dependenciesfor building the artifact and the paper (i.e. the entirety of tex) 
 .PHONY: setup_tex
 setup_tex: setup
-    sudo apt install texlive-full
+	sudo apt install texlive-full
 # on top of all dependencies for the artifact and paper also installs rstudio so that the notebooks can be viewed
 .PHONY: setup_rstudio
 setup_rstudio: setup_tex
-    sudo apt install gdebi
-    wget https://https://download1.rstudio.org/desktop/bionic/amd64/rstudio-1.2.1335-amd64.deb
-    sudo gdebi rstudio-1.2.1335-amd64.deb
+	sudo apt install gdebi
+	wget https://https://download1.rstudio.org/desktop/bionic/amd64/rstudio-1.2.1335-amd64.deb
+	sudo gdebi rstudio-1.2.1335-amd64.deb
 # installs and builds completely everything
 .PHONY: full
 full: setup_rstudio paper
