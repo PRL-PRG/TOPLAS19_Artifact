@@ -9,7 +9,7 @@ clean:
 	rm -rf artifact
 # builds only the artifact without trying to create the paper
 .PHONY: artifact
-artifact: R_LIBS_USER=./.R
+artifact: R_LIBS_USER = ./.R
 artifact:
 	Rscript --vanilla -e 'library(rmarkdown); rmarkdown::render("original_artifact.Rmd", "html_document")'
 	Rscript --vanilla -e 'library(rmarkdown); rmarkdown::render("repetition.Rmd", "html_document")'
@@ -24,7 +24,7 @@ paper: artifact
 	cd paper && pdflatex main && bibtex main && pdflatex main && pdflatex main
 # installs necessary dependencies for building the artifact
 .PHONY: setup
-setup: R_LIBS_USER=./.R
+setup: R_LIBS_USER = ./.R
 setup:
 	sudo apt install git-lfs
 	git checkout -f HEAD
