@@ -1,7 +1,7 @@
 # Install the required R packages
 
 install.packages(c(
-    "rmarkdown"
+    "rmarkdown",
     "car",
     "data.table",
     "assertthat",
