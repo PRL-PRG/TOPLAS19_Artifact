@@ -28,7 +28,7 @@ setup: R_LIBS_USER=./.R
 setup:
 	sudo apt install git-lfs
 	git checkout -f HEAD
-	sudo apt install r-base libcurl14-openssl-dev pandoc tcsh
+	sudo apt install r-base libcurl4-openssl-dev pandoc tcsh
 	mkdir .R
 	Rscript setup_r.R
 # installs necessary dependenciesfor building the artifact and the paper (i.e. the entirety of tex) 
