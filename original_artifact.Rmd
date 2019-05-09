@@ -3,12 +3,6 @@ title: "Building the Artifact of the original paper"
 output: html_notebook
 ---
 
-First install the prerequisites of the original artifact:
-
-```{bash}
-sudo apt-get install tcsh
-```
-
 The following command extract the contents of the original artifact into the `original` directory alongside the archive. The original artifact contains two folders, the `R_code` folder in which the original R scripts can be found as they were given to us and the `sqlDump` folder, which contains the data. 
 
 ```{bash}

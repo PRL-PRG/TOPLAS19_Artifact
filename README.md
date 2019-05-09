@@ -4,11 +4,15 @@ This repository contains both our paper and its accompanying artifact.
 
 ## TL;DR;
 
+> Assuming you have Ubuntu 19.04 with bash and TEX (for building the paper) installed, simply executing the following commands should build the artifact for you. If your system differs, you would have change the setup to reflect this, in which case you should read this readme carefully.
+
 The following commands build the whole artifact and the paper and open the paper in your system's default pdf viewer (assuming you have all prerequisites installed):
 
+    make setup
     make
-    open paper/main.pdf
-    
+
+Following these steps, the artifact will be built in the `artifact` directory and the paper in `paper/main.pdf`.
+
 Please do read the rest of this readme to find out about the structure of the artifact and how to use it correctly.
 
 ## Artifact Overview
@@ -43,6 +47,12 @@ Contains the aggregated data obtained from the above mentioned tools. The follow
 - `petrs_commits` contains the analysis of the commits done by us for a previous version of the paper
 
 ## Running the artifact
+
+The artifact has been tested on Ubuntu 19.04 and there is a very high chance it will work on other ubuntu versions and derivatives as well. If not the `setup.sh` and `setup_tex.sh` files must be changed to reflect the correct platform. These scripts install the following software:
+
+- `R` and its markdown processing packages for running the rest of the artifact
+- `tcsh` for running the artifact shipped with the original paper which we include as well
+- packages for `R` that need to be installed in order to run the artifact 
 
 > The artifact has been tested on Ubuntu 17.10, i7-7700, 64GB RAM and 1TB NVMe disk.
 

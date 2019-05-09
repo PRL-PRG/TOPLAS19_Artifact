@@ -18,5 +18,6 @@ install.packages(c(
     "gridExtra",
     "grid",
     "tidyr",
+    "irr",
     dependencies = T
 ))
