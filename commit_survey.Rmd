@@ -134,6 +134,17 @@ data$agreeOurs = as.numeric(data$label == data$ours)
 write.csv(data, file=paste0(WORKING_DIR, "/Data/commit_survey_results.csv"))
 ```
 
+The `data` format is as follows:
+
+- `V1` - link to the commit on github
+- `category` - category of the bug (in the end this data was not used)
+- `score` - fraction of the participants who have labelled the commit as a bugfix
+- `label` - the overall verdict of the participants (majority)
+- `ours` - did we think the commit is a bug?
+- `paper` - did the original paper report the commit as a bugfix? 
+- `agreePaper` - did the survey agree with the original paper labelling on the commit?
+- `agreeOurs` - did the survey agree with our assessment of the commit?
+
 ```{r}
 falsePositives <- nrow(data[data$paper == 1 & data$label == 0,])
 falseNegatives <- nrow(data[data$paper == 0 & data$label == 1,])
