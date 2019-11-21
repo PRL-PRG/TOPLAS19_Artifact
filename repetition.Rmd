@@ -203,8 +203,8 @@ Finally, let's summarize `everything_clean` per language:
 ```{r}
 checkSha = everything_clean %>% 
     dplyr::select(-(file_name)) %>% 
-    group_by(sha) %>% 
-    mutate(files = n()) %>% 
+    dplyr::group_by(sha) %>% 
+    dplyr::mutate(files = dplyr::n()) %>% 
     distinct(sha, .keep_all = T) %>% 
     dplyr::select(language, project, sha, files, committer, author, commit_age, insertion, deletion, isbug, domain)
 ```
@@ -230,9 +230,9 @@ Now in order to properly compare `newSha` and its version we obtained from `ever
 
 ```{r}
 checkSha = checkSha %>%
-    group_by(project, language) %>%
-    mutate(n = n()) %>%
-    filter(n >= 20) %>%
+    dplyr::group_by(project, language) %>%
+    dplyr::mutate(n = dplyr::n()) %>%
+    dplyr::filter(n >= 20) %>%
     dplyr::select(-(n));
 ```
 
