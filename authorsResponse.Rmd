@@ -1,0 +1,122 @@
+---
+title: "Authors Response"
+output: html_notebook
+---
+
+```{r}
+# load the file containing the actual implementation details
+knitr::opts_chunk$set(echo = FALSE)
+source("implementation.R")
+initializeEnvironment("./artifact/authorsResponse")
+```
+
+# Data Collection
+
+Similar to re-analysis, we reuse the cleaning and optimization passes from the repetition and just load the result of that:
+
+```{r}
+data = read.csv("./artifact/repetition/Data/newSha.csv")
+initial_data = data
+initial_number_of_commits = length(unique(data$sha))
+initial_number_of_rows = nrow(data)
+initial_number_of_projects = length(unique(initial_data$project))
+everything =loadEverything()
+```
+
+# Detailed Analysis of the Duplication
+
+First determine the commits that are present on multiple occasions:
+
+```{r}
+sha_proj = data %>% dplyr::select(sha, project) %>% group_by(sha, project) %>% dplyr::summarize(n = n())
+duplicates_sha = sha_proj %>% group_by(sha) %>% dplyr::summarize(n = n()) %>% filter(n > 1)
+# this is the number of commits that are present in multiple commits
+num_duplicates_sha = nrow(duplicates_sha)
+# how many projects are affected? 
+dup_repos = data %>% filter(sha %in% duplicates_sha$sha)
+dup_repos = unique(dup_repos$project)
+num_dup_repos = length(dup_repos)
+check(num_dup_repos == 33)
+# determine how many commits are there in the affected projects in total
+commits_by_dup_repos = data %>% filter(project %in% dup_repos) %>% group_by(sha)
+num_commits_by_dup_repos = nrow(commits_by_dup_repos)
+# since we can't do better, exclude all duplicate commits from the dataset
+dedup = data %>% filter(! sha %in% duplicates_sha$sha);
+```
+
+Let's see the overall rates of the duplication:
+
+```{r}
+out("numProjectsWithDuplicatesOverall", num_dup_repos)
+out("pctProjectsWithDuplicatesOverall", round(num_dup_repos / initial_number_of_projects, 2))
+out("numDuplicateCommitsOverall", num_duplicates_sha)
+out("pctDuplicateCommitsOverall", round(num_duplicates_sha/initial_number_of_commits * 100,2))
+out("numDuplicateRowsLost", initial_number_of_rows - nrow(dedup))
+out("pctDuplicateRowsLost", round(100 - nrow(dedup) / initial_number_of_rows * 100, 2))
+```
+
+And now, let's calculate this for each language:
+
+```{r}
+languages = unique(data$language)
+dupBreakdown = data.frame(
+    language = languages, 
+    rows = rep(0, length(languages)),
+    dupRows = rep(0, length(languages)),
+    commits = rep(0, length(languages)),
+    dupCommits = rep(0, length(languages)),
+    projects = rep(0, length(languages)),
+    dupProjects = rep(0, length(languages))
+)
+i = 1;
+for (lang in languages) {
+    id = data %>% filter(language == lang)
+    dd = dedup %>% filter(language == lang)
+    dupd = id %>% filter(sha %in% duplicates_sha$sha)
+
+    dupBreakdown$rows[[i]] = nrow(id)
+    dupBreakdown$dupRows[[i]] = nrow(id) - nrow(dd)
+    dupBreakdown$commits[[i]] = length(unique(id$sha))
+    dupBreakdown$dupCommits[[i]] = length(unique(id$sha)) - length(unique(dd$sha))
+    dupBreakdown$projects[[i]] = length(unique(id$project))
+    dupBreakdown$dupProjects[[i]] = length(unique(dupd$project))
+
+    i = i + 1
+    
+}
+dupBreakdown$dupRowsPct = 100 * dupBreakdown$dupRows/dupBreakdown$rows
+dupBreakdown$dupCommitsPct = 100 * dupBreakdown$dupCommits/dupBreakdown$commits
+dupBreakdown$dupProjectsPct = 100 * dupBreakdown$dupProjects/dupBreakdown$projects
+
+dupBreakdown
+```
+
+Let's do some graphs:
+
+```{r}
+gd = melt(dupBreakdown %>% dplyr::select(language, rows = dupRowsPct, commits = dupCommitsPct, projects = dupProjectsPct), id = c("language"))
+ggplot(gd, aes(fill=variable, y=value, x=language)) + 
+    geom_bar(position="dodge", stat="identity") +
+    theme(axis.text.x = element_text(angle = 45)) +
+    ggtitle("% of duplicates per Language") +
+    ylab("% of duplicate entries")
+```
+
+Interpretation: In C we see no rows & commits, but a few projects because linux kernel, C is the language with most rows and commits to begin with
+
+Only the green bars now (commits):
+
+```{r}
+gd = dupBreakdown %>% dplyr::select(language, commits = dupCommitsPct)
+ggplot(gd, aes(y=commits, x=language)) + 
+    geom_bar(position="dodge", stat="identity") +
+    theme(axis.text.x = element_text(angle = 45)) +
+    ggtitle("% of duplicate commits per Language") +
+    ylab("% of duplicate commits")
+
+```
+
+
+
+
+

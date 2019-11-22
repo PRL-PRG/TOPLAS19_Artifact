@@ -283,7 +283,7 @@ Let's do some graphs:
 ## Commits vs. Bugfixes.
 
 ```{r}
-data %>% group_by(language) %>% summarize(commits = n(), bugfixes = sum(isbug)) -> df
+data %>% dplyr::group_by(language) %>% dplyr::summarize(commits = n(), bugfixes = sum(isbug)) -> df
 
 ggplot(data=df, aes(x=commits, y=bugfixes)) + 
   geom_smooth(method='lm',size=.5, formula = y ~ x)  +
@@ -353,7 +353,7 @@ print(p)
 ## Developer behavior
 
 ```{r}
-data %>% group_by(author) %>% summarize(n=n())  %>% arrange(desc(n)) -> devs
+data %>% group_by(author) %>% dplyr::summarize(n=n())  %>% arrange(desc(n)) -> devs
 
 most_commits_bydev <- .9*sum(devs$n)
 
@@ -373,7 +373,7 @@ devs_prolific <- devs$author[1:d]
 
 # Show the number of languages the most prolific authors committed for
 data %>% filter(author %in% devs_prolific) -> devs_prolific
-devs_prolific = devs_prolific %>% group_by(author,language) %>% summarize(n=n()) %>% summarize(l=n())  %>% arrange(desc(l))
+devs_prolific = devs_prolific %>% group_by(author,language) %>% dplyr::summarize(n=n()) %>% dplyr::summarize(l=n())  %>% arrange(desc(l))
 devs_prolific
 hist(devs_prolific$l)
 ```
@@ -745,29 +745,43 @@ if (UNCERTAINTY) {
         sig = rep(NA, length(paramsRowNames)),
         sigCons = rep(NA, length(paramsRowNames))
     )
-    
-    
     par(mfrow=c(2,4))
     quant = 0.01
     quantCons = 0.01 / numLanguages
     for ( i in 1:length(paramsRowNames)) {
-        result$coef[[i]] = round(mean(paramsLang[i,]), digits = 2)
+        paramMean = mean(paramsLang[i,])
+        result$coef[[i]] = round(paramMean, digits = 2)
         result$se[[i]] = round(sd(paramsLang[i,]), digits = 2)
         qsigns = sign(quantile(paramsLang[i,], probs = c(quant, 1-quant, quantCons, 1-quantCons), na.rm = T))
         result$sig[[i]] = qsigns[[1]] == qsigns[[2]]
         result$sigCons[[i]] = qsigns[[3]] == qsigns[[4]]
+        # store the fake pValue here so that we can later try FDR. Since bootstrap does not really have pValues, we take the % that different result than the mean will be reported to be the pValue
+        if (paramMean > 0)
+            result$fakePVal[[i]] = sum(paramsLang[i,] < 0) / length(paramsLang[i,])
+        else 
+            result$fakePVal[[i]] = sum(paramsLang[i,] > 0) / length(paramsLang[i,])
         hist(paramsLang[i,],
              xlab=paramsRowNames[i], 
              main=paste("mean =", round(mean(paramsLang[i,]), digits=2))
         )
         abline(v=0, col="red", lwd=2)
     }
+    # calculate the bonferroni and FDR pVal Coefficients for the fake p values - note that we do not adjust the pValues for the control variables (top lines)
+    result$fakeBonf = result$fakePVal
+    result$fakeFdr = result$fakePVal
+    adjEnd = length(result$fakePVal)
+    adjStart = adjEnd - numLanguages
+    result$fakeBonf[adjStart:adjEnd] = round(p.adjust(result$fakePVal[adjStart:adjEnd], "bonferroni"), 3)
+    result$fakeFdr[adjStart:adjEnd] = round(p.adjust(result$fakePVal[adjStart:adjEnd], "fdr"), 3)
+    result$fakePValCheck = result$fakePVal <= 0.01
+    result$fakeBonfCheck = result$fakeBonf <= 0.01
+    result$fakeFdrCheck = result$fakeFdr <= 0.01
 }
 ```
 
 ```{r}
 if (UNCERTAINTY) {
-    result
+    result # %>% dplyr::select(sigCons, fakePVal, fakeBonf, fakeFdr)
 }
 ```
 
@@ -792,16 +806,16 @@ filter_proj <- function(df,proj,lang) {
     arrange(commit_age) -> bt
   bt %>% 
     group_by(commit_age,isbug) %>% 
-    summarize(n = n()) %>% 
+    dplyr::summarize(n = n()) %>% 
     spread(key = "isbug",value = "n") -> bt2
   bt2 %>% 
-    mutate(br = round(`0`/(`0`+`1`),2), 
+    dplyr::mutate(br = round(`0`/(`0`+`1`),2), 
            month = as.integer(commit_age/30)) -> bt3
   bt3  %>% 
     na.omit() %>% 
-    group_by(month) %>% 
-    summarize(n = n(), brs = sum(br), brm = brs/n) %>%
-    mutate(name= paste0(proj," ",lang)) -> prj
+    dplyr::group_by(month) %>% 
+    dplyr::summarize(n = n(), brs = sum(br), brm = brs/n) %>%
+    dplyr::mutate(name= paste0(proj," ",lang)) -> prj
   rbind(df, prj)
 }
 
@@ -834,7 +848,7 @@ ggsave(paste(WORKING_DIR, "/Figures/bugspermonth.pdf", sep = ""), width = 8, hei
 # Commits for top-5 projects by language
 
 ```{r fig.width = 20, fig.height = 4, echo=FALSE}
-data %>% group_by(language, project) %>% summarize(n = n()) %>% arrange(desc(n)) %>% arrange(desc(language)) %>% top_n(5, wt = n) -> projsize_ordered2
+data %>% group_by(language, project) %>% dplyr::summarize(n = n()) %>% arrange(desc(n)) %>% arrange(desc(language)) %>% top_n(5, wt = n) -> projsize_ordered2
 projsize_ordered2
 
 projsize_ordered2 %>% ggplot(aes(x = reorder(factor(project), -n), y = n)) + 
@@ -848,15 +862,15 @@ projsize_ordered2 %>% ggplot(aes(x = reorder(factor(project), -n), y = n)) +
 # Authors
 
 ```{r}
-everything %>% group_by(author, sha) %>% summarize(n=n()) %>% group_by(author) %>% summarise(commits = n()) -> auth
+everything %>% group_by(author, sha) %>% dplyr::summarize(n=n()) %>% group_by(author) %>% dplyr::summarise(commits = n()) -> auth
 auth %>% arrange(desc(commits))
 tot <- sum(auth$commits)
 check( tot == 1485049)
 top <- sort(auth$commits, dec=T)[1:453]
 sum(top)/tot ## 46 %
 
-everything %>% group_by(author, project) %>% summarize(n=n()) %>% 
-  group_by(author) %>% summarise(proj = n())   %>% arrange(desc(proj)) -> authproj
+everything %>% group_by(author, project) %>% dplyr::summarize(n=n()) %>% 
+  group_by(author) %>% dplyr::summarise(proj = n())   %>% arrange(desc(proj)) -> authproj
 
 summary(authproj)  ## mean 1.2
 ```
