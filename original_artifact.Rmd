@@ -7,6 +7,7 @@ The following command extract the contents of the original artifact into the `or
 
 ```{bash}
 cd original
+wget https://github.com/PRL-PRG/TOPLAS19_Artifact/releases/download/v0/artifact.tgz
 tar -zxf artifact.tgz
 cd ..
 ```

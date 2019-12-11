@@ -9,8 +9,8 @@
 *.cb2
 paper/main.pdf
 artifact
-original/sqlDump
-original/R_code
+original
+
 
 
 
