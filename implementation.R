@@ -227,7 +227,7 @@ lessThanPv = function(x) {
     x
 }
 
-lessThanPvCheck = function(x, against) {
+lessThanPvCheckNAFail = function(x, against) {
     x[is.na(x)] = "--"
     x[x == "NA"] = "--"
     x[! is.na(against) & x != "--" & x < against] = paste("<", against[! is.na(against) & x != "--" & x < against], sep="")
@@ -338,9 +338,12 @@ output_RQ1_table_repetition = function(result) {
 
 output_RQ1_table_reanalysis = function(result) {
     validClean = checkPValues(result, "FSE_pv", "clean_pv", naVal = F)
-    validFdr = checkPValuesLevel(result, "FSE_pv", "adjusted_fdr", 0.01)
-    validBonf = checkPValuesLevel(result, "FSE_pv","adjusted_bonf", 0.01)
-    validZeroSum = checkPValuesLevel(result, "FSE_pv", "zeroSum_pv", 0.01)
+    #validFdr = checkPValuesLevel(result, "FSE_pv", "adjusted_fdr", 0.01)
+    #validBonf = checkPValuesLevel(result, "FSE_pv","adjusted_bonf", 0.01)
+    #validZeroSum = checkPValuesLevel(result, "FSE_pv", "zeroSum_pv", 0.01)
+    validFdr = checkPValues(result, "FSE_pv", "adjusted_fdr", naVal = F)
+    validBonf = checkPValues(result, "FSE_pv","adjusted_bonf", naVal = F)
+    validZeroSum = checkPValues(result, "FSE_pv", "zeroSum_pv", naVal = F)
     validBootstrap = checkSignificance(result, "FSE_pv", "bootstrap_sig", naVal = F)
     
     
@@ -358,12 +361,15 @@ output_RQ1_table_reanalysis = function(result) {
     result$clean_coef = latexPassFailCell(result$clean_coef, validClean)
     result$clean_pv = lessThanPvCheck(result$clean_pv, result$FSE_pv)
     result$clean_pv = latexPassFailCell(result$clean_pv, validClean)
-    result$adjusted_fdr = lessThanPvCheck01(result$adjusted_fdr)
+    #result$adjusted_fdr = lessThanPvCheck01(result$adjusted_fdr)
+    result$adjusted_fdr = lessThanPvCheck(result$adjusted_fdr, result$FSE_pv)
     result$adjusted_fdr = latexPassFailCell(result$adjusted_fdr, validFdr)
-    result$adjusted_bonf = lessThanPvCheck01(result$adjusted_bonf)
+    #result$adjusted_bonf = lessThanPvCheck01(result$adjusted_bonf)
+    result$adjusted_bonf = lessThanPvCheck(result$adjusted_bonf, result$FSE_pv)
     result$adjusted_bonf = latexPassFailCell(result$adjusted_bonf, validBonf)
     result$zeroSum_coef = latexPassFailCell(result$zeroSum_coef, validZeroSum)
-    result$zeroSum_pv = lessThanPvCheck01(result$zeroSum_pv)
+    #result$zeroSum_pv = lessThanPvCheck01(result$zeroSum_pv)
+    result$zeroSum_pv = lessThanPvCheck(result$zeroSum_pv, result$FSE_pv)
     result$zeroSum_pv = latexPassFailCell(result$zeroSum_pv, validZeroSum)
     result$bootstrap_coef = latexPassFailCell(result$bootstrap_coef, validBootstrap)
     result$bootstrap_sig = latexPassFailCell(result$bootstrap_sig, validBootstrap)

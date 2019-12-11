@@ -39,6 +39,29 @@
 \linenumbers % line numbering REMOVE
 
 \newcommand{\ov}[1]{{\color{red}#1}}
+\setcopyright{acmcopyright}
+\acmJournal{TOPLAS}
+\acmYear{2019} \acmVolume{1} \acmNumber{1} \acmArticle{1} \acmMonth{1} \acmPrice{15.00}\acmDOI{10.1145/3340571}
+
+
+\begin{CCSXML}
+<ccs2012>
+<concept>
+<concept_id>10002944.10011123.10010912</concept_id>
+<concept_desc>General and reference~Empirical studies</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10011007.10011074.10011099.10011102.10011103</concept_id>
+<concept_desc>Software and its engineering~Software testing and debugging</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+</ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{General and reference~Empirical studies}
+\ccsdesc[500]{Software and its engineering~Software testing and debugging}
+
 
 
 \begin{document}
@@ -52,7 +75,7 @@
 \subtitle{A Reproduction Study}
   
 \author{Emery D. Berger}
-\affiliation{\institution{University of Massachusetts Amherst}}
+\affiliation{\institution{University of Massachusetts Amherst and Microsoft Research}}
 
 \author{Celeste Hollenbeck}
 \affiliation{\institution{Northeastern University}}
@@ -71,14 +94,14 @@
 In a 2014 paper, Ray, Posnett, Devanbu, and Filkov claimed to have
 uncovered a statistically significant association between eleven programming
 languages and software defects in 729 projects hosted on \gh.  Specifically,
-their work answered four research questions relating software defects and
+their work answered four research questions relating to software defects and
 programming languages. With data and code provided by the authors, the
-present paper attempts to conduct an experimental repetition of the original
+present paper first attempts to conduct an experimental repetition of the original
 study. The repetition is only partially successful, due to missing code and
 issues with the classification of languages. The second part of this work
 focuses on their main claim, the association between bugs and languages, and
 performs a complete, independent reanalysis of the data and of the
-statistical modeling steps undertaken by Ray \ea in 2014.  The reanalysis
+statistical modeling steps undertaken by Ray \ea in 2014.  This reanalysis
 uncovers a number of serious flaws which reduce the number of languages with
 an association with defects down from eleven to only four. Moreover, the
 practical effect size is exceedingly small. These results thus undermine the
@@ -104,7 +127,7 @@ language features over others presents methodological challenges. While one
 could have multiple teams of experienced programmers develop the same
 application in different languages, such experiments are too costly to be
 practical. Instead, when pressed to justify their choices, language
-designers resort to intuitive arguments or proxies for productivity such as
+designers often resort to intuitive arguments or proxies for productivity such as
 numbers of lines of code.
 
 However, large-scale hosting services for code, such as \gh or
@@ -119,7 +142,7 @@ programming language design to software quality.
 the question at the heart of the study by Ray \ea published at the 2014
 Foundations of Software Engineering (FSE) conference~\cite{ray14}. The work
 was sufficiently well-regarded in the software engineering community to be
-nominated as a Communication of the ACM (CACM) \emph{research highlight}.
+nominated as a Communication of the ACM (CACM) \emph{Research Highlight}.
 After another round of reviewing, a slightly edited version appeared
 in journal form in 2017~\cite{ray17}. A subset of the authors also published
 a short version of the work as a book chapter~\cite{book}.  The results
@@ -128,7 +151,7 @@ on an observational study of a corpus of 729 \gh projects written in 17
 programming languages. To measure quality of code, the authors identified,
 annotated, and tallied commits which were deemed to indicate bug fixes. The
 authors then fit a Negative Binomial regression against the labeled data,
-which was used to answer four research questions as follows:
+which was used to answer the following four research questions:
 \begin{enumerate}
 \item[RQ1] ``{\bf Some languages have a greater association with defects
   than others}, although the effect is small.'' Languages associated with
@@ -138,7 +161,7 @@ which was used to answer four research questions as follows:
   language class and defects.} Functional languages have a smaller
   relationship to defects than either procedural or scripting languages.''
 \item[RQ3] ``{\bf There is no general relationship between domain and
-  language defect proneness.}'' Thus application domains are less important
+  language defect proneness.}'' Thus, application domains are less important
   to software defects than languages.
 \item[RQ4] ``{\bf Defect types are strongly associated with languages.} Some
   defect types like memory errors and concurrency errors also depend on language
@@ -151,8 +174,8 @@ results confirmed commonly held beliefs about the benefits of static type
 systems and the need to limit the use of side effects in programming.
 
 \emph{Correlation is not causality, but it is tempting to confuse them.}
-The original study couched its results in terms of \emph{associations} (\ie
-correlations) rather than \emph{effects} (\ie \emph{causality}) and
+The original study couched its results in terms of \emph{associations} (\ie,
+correlations) rather than \emph{effects} (\ie, \emph{causality}) and
 carefully qualified effect size.  Unfortunately, many of the paper's readers
 were not as careful. The work was taken by many as a statement on the impact
 of programming languages on defects. Thus, one can find citations such as:
@@ -161,8 +184,8 @@ of programming languages on defects. Thus, one can find citations such as:
   modest effect on software quality.}''\,\cite{one}
 \item ``\emph{...The results indicate that strong languages have better
   code quality than weak languages.}''\,\cite{three} 
-\item ``\emph{...\c, \cpp and especially \objc is more failure prone than
-  other languages.}''\,\cite{nine}
+\item ``\emph{...functional languages have an advantage over procedural
+  languages.}''\,\cite{nine}
 \end{itemize}
 
 \begin{wraptable}{r}{4cm}\center{\footnotesize\sf
@@ -180,14 +203,14 @@ Causation      &  24 & 3\\\hline
 
 \noindent Table~\ref{cites} summarizes our citation analysis. Of the 119
 papers that were retrieved,\footnote{Retrieval performed on 12/01/18 based
-  on the Google Scholar citations of the FSE paper, duplicates were
+  on the Google Scholar citations of the FSE paper; duplicates were
   removed.}  90 citations were either passing references (Cursory) or
 discussed the methodology of the original study (Methods). Out of the
 citations that discussed the results, 4 were careful to talk about
-associations (\ie correlation), while 26 used language that indicated
-effects (\ie causation). It is particularly interesting to observe that
+associations (\ie, correlation), while 26 used language that indicated
+effects (\ie, causation). It is particularly interesting to observe that
 even the original authors, when they cite their own work, sometimes resort to
-causal language: Ray and Posnett write ``\emph{Based on our previous study
+causal language. For example, Ray and Posnett write ``\emph{Based on our previous study
   \cite{ray14} we found that the overall effect of language on code quality
   is rather modest.}''~\cite{book}, Devanbu writes ``\emph{We found that
   static typing is somewhat better than dynamic typing, strong typing is
@@ -200,7 +223,7 @@ account of the original study and its conclusions.
 
 Given the controversy generated by the CACM paper on social media, and some
 surprising observations in the text of the original study (\emph{e.g.}, that
-V8 is their largest \js project---when the virtual machine is written in
+Chrome V8 is their largest \js project---when the virtual machine is written in
 \cpp), we wanted to gain a better understanding of the exact nature of the
 scientific claims made in the study and how broadly they are actually
 applicable. To this end, we chose to conduct an independent reproduction
@@ -212,8 +235,8 @@ Ioannidis argued that most research findings are false~\cite{allfalse}. His
 reasoning factored in small effect sizes, limited number of experiments,
 misunderstanding of statistics, and pressure to publish.  While refutations
 in computer science are rare, there are worrisome signs.
-In~\cite{emsoft11}, Kalibera \ea~reported that 39 of 42~PLDI~2011 papers
-failed to report any uncertainty in measurements.  Reyes \ea~catalogued
+Kalibera \ea~reported that 39 of 42~PLDI~2011 papers
+failed to report any uncertainty in measurements~\cite{emsoft11}.  Reyes \ea~catalogued
 statistical errors in 30\% of the empirical papers published at
 ICSE~\cite{se-errors} from 2006 to 2015. Other examples include the critical
 review of patch generation research by Monperrus~\cite{Monperrus} and the
@@ -223,11 +246,11 @@ situation, our best bet is to encourage a culture of \emph{reproducible
   research}~\cite{Feitelson}.  Reproduction increases our confidence: an
 experimental result reproduced independently by multiple authors is more
 likely to be valid than the outcome of a single study.  Initiatives such as
-ICSE's artifact evaluation process, which started at FSE and spread
+SIGPLAN and SIGSOFT's artifact evaluation process, which started at FSE and spread
 widely~\cite{cacm15}, are part of a move towards increased reproducibility.
 
 \paragraph{Methodology}
-Reproducibility of results is not a binary proposition. Instead, it is a
+Reproducibility of results is not a binary proposition. Instead, it spans a
 spectrum of objectives that provide assurances of different kinds (see
 Figure~\ref{spec} using terms from~\cite{terms,emsoft11}).
 
@@ -279,7 +302,7 @@ number of languages dropped to 7. Investigations of the original statistical
 modeling revealed technical oversights such as inappropriate handling of
 multiple hypothesis testing. Finally, we enlisted the help of independent
 developers to cross-check the original method of labeling defective commits,
-this led us to estimate a false positive rate of 36\% on buggy commit
+which led us to estimate a false positive rate of 36\% on buggy commit
 labels. Combining corrections for all of these aforementioned items, the
 reanalysis revealed that only 4 out of the original 11 languages correlated
 with abnormal defect rates, and even for those the effect size is
@@ -299,11 +322,11 @@ proper statistical methods, more research is needed to understand all the
 various sources of bias that may affect the outcomes.  Section~\ref{threats}
 lists some challenges that we discovered while doing our repetition. For
 instance, the ages of the projects vary across languages (older languages
-such as C are dominated by mature projects such as Linux), or the data
-includes substantial numbers of commits to test files (how bugs in tests are
+such as C are dominated by mature projects such as Linux), and the data
+include substantial numbers of commits to test files (how bugs in tests are
 affected by language characteristics is an interesting question for future
 research).  We believe that there is a need for future research on this
-topic, we thus conclude our paper with some best practice recommendations
+topic; we thus conclude our paper with some best practice recommendations
 for future researchers (Section~\ref{best}).
 
 \section{Original Study and Its Conclusions}
@@ -343,7 +366,7 @@ was assessed. Since the categories were highly correlated (and thus
 compromised the stability of the NBR), the paper modeled aggregations of the
 languages by class. The regression included the same confounders as in RQ1
 and represented language classes. The authors report the coefficients, their
-standard errors, and ranges of p-values. Results may lead readers to
+standard errors, and ranges of p-values. These results may lead readers to
 conclude that functional, strongly typed languages induced fewer errors,
 while procedural, weakly typed, unmanaged languages induced more errors.
 
@@ -379,7 +402,7 @@ features.
 \subsection{Methods in the original study}
 
 Below, we summarize the process of data analysis by the original manuscript
-while splitting it into the followng three phases: data acquisition,
+while splitting it into the following three phases: data acquisition,
 cleaning, and modeling.
 
 \renewcommand{\SS}{\hspace{-.7mm}} 
@@ -460,7 +483,7 @@ attributed to language classes and the confounders. For RQ3, the paper
 calculates the Spearman's correlation coefficient between defectiveness by
 domain and defectiveness overall, with respect to language, to discuss the
 association between languages versus that by domain. For RQ4, the study once
-again uses NBR, with the same confounders, to explore propensity for
+again uses NBR, with the same confounders, to explore the propensity for
 bugfixes among the languages with regard to bug types. 
 
 \section{Experimental Repetition}
@@ -477,21 +500,22 @@ results and these match the results in the published paper. In our case, we
 only had part of the code needed to generate the expected tables and no code
 for graphs.  We therefore wrote new R scripts to mimic all of the steps, as
 described in the original manuscript.  We found it essential to automate the
-productions of all numbers, tables, and graphs shown in our paper as we had
+production of all numbers, tables, and graphs shown in our paper as we had
 to iterate multiple times. The code for repetition amounts to 1,140~lines of
 R (file \code{\small repetition.Rmd} and \code{\small implementation.R} in
 our artifact).
 
 \subsection{Results}
 
-The data was given to us in the form of two CSV files. The first, larger
+The data was provided to us in the form of two CSV files. The first, larger
 file contained one row per file and commit, and it contained the bug fix
 labels.  The second, smaller file aggregated rows with the same commit and
-the same language. Upon preliminary inspection, the files contained
-information on \numberOfProjectsIncluded projects and \numberCommitsMio
-million commits.  We found an additional \numberOfProjectsNotIncluded
-projects that were omitted from the original study without explanation.
-We choose to ignore those projects as data volume is not an issue here.
+the same language. Upon preliminary inspection, we observed that the files
+contained information on \numberOfProjectsIncluded projects and
+\numberCommitsMio million commits.  We found an additional
+\numberOfProjectsNotIncluded projects that were omitted from the original
+study without explanation.  We choose to ignore those projects as data
+volume is not an issue here.
 
 \paragraph{Developers vs. Committers}
 One discrepancy was the \numberAuthors thousand authors we observed versus
@@ -535,8 +559,10 @@ metric of size should be.
 
 We were able to qualitatively (although not exactly) repeat the result of
 RQ1. Table~\ref{langtable1} (a) has the original results, and (c) has our
-repetition. One disagreement in our repetition is with \php. The FSE paper
-reported a p-value <$.001$, while we observed <$.01$, in other words, the
+repetition.  Grey cells indicate disagreement with the conclusion of the
+original work.  One disagreement in our repetition is with \php. The FSE paper
+reported a p-value <$.001$, while we observed <$.01$; per their established
+threshold of .005, the
 association of \php with defects is not statistically significant. The
 original authors corrected that value in their CACM repetition (shown in
 Table~\ref{langtable1} (b)), so this may just be a reporting error. On the
@@ -587,15 +613,15 @@ language, yet it allows programs to be written in an imperative manner. We
 are not aware of any study that shows that the majority of \scala users
 write functional code. Our experience with \scala is that users freely mix
 functional and imperative programming. \objc is listed as a statically
-compiled and unmanaged language. Yet it has an object system that is
-inspired by \smalltalk, thus its treatment of objects is quite dynamic, and
-objects are collected by reference counting, thus memory is partially
+compiled and unmanaged language. However, \objc has an object system that is
+inspired by \smalltalk; its treatment of objects is quite dynamic, and
+objects are collected by reference counting, so its memory is partially
 managed.
 The Type category is the most counter-intuitive for programming language
 experts as it expresses whether a language allows value of one type to be
 interpreted as another, e.g. due to automatic conversion. The CACM paper
 attempted to clarify this definition with the example of the \code{ID} type.
-In \objc, an \code{ID} variable which can hold any value.  If this is what
+In \objc, an \code{ID} variable can hold any value.  If this is what
 the authors intend, then \python, \ruby, \clojure, and \erlang would be weak
 as they have similar generic types.
 
@@ -605,11 +631,11 @@ and \erlang. Table~\ref{t5}(c) summarizes the results with the new
 categorization. The reclassification (using zero-sum contrasts introduced in
 section~\ref{sec:zerosum}) disagrees on the significance of 2 out of 5
 categories.  We note that we could repeat the results of the original
-classification, but since that classification is wrong they are not
+classification, but since that classification is wrong, those results are not
 meaningful.
 
 %-----------------------------------------------------------
-%-----------------------------------------------------------
+
 \begin{table}[h!]\center
 \caption{Negative Binomial Regression for Language Classes}
 \input{../artifact/repetition/Data/languages_classes_table.tex}\label{t5}
@@ -618,9 +644,6 @@ meaningful.
   (Str), weak (Wea), managed (Man), and unmanaged (Unm). Rows marked -- have
   no observation.}
 \end{table}
-%-----------------------------------------------------------
-%-----------------------------------------------------------
-
 
 \subsubsection{Does language defect proneness depend on domain (RQ3)}
 
@@ -647,11 +670,11 @@ types. Additionally, we found no single column in the data that contained
 the bug categories reported in the FSE paper. It was further unclear whether
 the bug types were disjoint: adding together all of the percentages for
 every bug type mentioned in Table~5 of the FSE study totaled 104\%.  The
-input CSV file did contain two columns which, combined, matched these
+input CSV file did contain two columns which, when combined, matched these
 categories. When we attempted to reconstruct the categories and compared
 counts of each bug type, we found discrepancies with those originally
 reported.  For example, we had 9 times as many Unknown bugs as the original,
-but we had only less than half Memory bugs.  Such discrepancies make
+but we had only less than half the number of Memory bugs.  Such discrepancies make
 repetition invalid.
 
 \begin{table}[!h]\centering \caption{NBR for RQ3}
@@ -733,9 +756,9 @@ as with the \code{git rebase} command).
 \caption{Percentage of commits identified as missing from the FSE dataset.}\label{miss}%\vspace{-3mm}
 \end{figure}
 
-Next, we applied three data cleaning steps (see below for details), each of
+Next, we applied three data cleaning steps (see below for details; each of
 these was necessary to compensate for errors in data acquisition of the
-original study: (1) \emph{Deduplication}, (2) \emph{Removal of TypeScript},
+original study): (1) \emph{Deduplication}, (2) \emph{Removal of TypeScript},
 (3) \emph{Accounting for C and C++}.  Our implementation consists of 1323
 lines of R code split between files \code{\small re-analysis.Rmd} and
 \code{\small implem\-entation.R} in the artifact.
@@ -815,14 +838,14 @@ papers.
 \subsubsection{Accounting for C++ and C}
 
 Further investigation revealed that the input data only included \cpp
-commits to files with the .\code{cpp} extension.  Yet, \cpp compilers allow
-many extensions: .\code{C}, .\code{cc}, .\code{CPP}, .\code{c++},
+commits to files with the .\code{cpp} extension. However, \cpp compilers allow
+many extensions, including .\code{C}, .\code{cc}, .\code{CPP}, .\code{c++},
 .\code{cp}, and .\code{cxx}.  Moreover, the dataset contained no commits to
 .\code{h} header files.  However, these files regularly contain executable
 code such as inline functions in \c and templates in \cpp.  We could not
 repair this without getting additional data and writing a tool to label the
 commits in the same way as the authors did.  We checked \gh Linguist to
-explain the missing files; but as of 2014, it was able to recognize header
+explain the missing files, but as of 2014, it was able to recognize header
 files and all \cpp extensions.  
 
 
@@ -857,7 +880,7 @@ authors.  Overall, our cleaning reduced the corpus by
 commits and bug fixes in all of the languages after the cleaning. As one
 would expect, the number of bug-fixing commits correlated to the number of
 commits. The figure also shows that the majority of commits in the corpus
-came from \c and \cpp. \perl is an outliers because most of its commits were
+came from \c and \cpp. \perl is an outlier because most of its commits were
 missing from the corpus.
 
 
@@ -879,7 +902,7 @@ projects, randomly sample 10 commits labeled as bug-fixing and 10 commits
 not labeled as bug-fixing. Enlisting help from 10 independent developers
 employed in industry, we omitted the commits' bugfix labels and divided them 
 equally among the ten experts. Each commit was manually given a new binary 
-bugfix label by 3 of the experts, according to best judgment. Commits
+bugfix label by 3 of the experts, according to their best judgment. Commits
 with at least 2 bugfix votes were considered to be bug fixes.  The review
 suggested a false positive rate of \commitsFalsePositives; \ie, \commitsFalsePositives of the commits that the
 original study considered as bug-fixing were in fact not. The false negative
@@ -889,9 +912,9 @@ alternative route and took labeling inaccuracy into account as part of the
 statistical modeling and analysis.
 
 We give five examples of commits that were labeled as bug fixing in the FSE
-paper but were deemed by developers not to be bug fixes, each line contains
+paper but were deemed by developers not to be bug fixes. Each line contains
 the text of the commit, underlined emphasis is ours and indicates the likely
-reason the commit was labeled as a bug fix, the URL points to the commit in
+reason the commit was labeled as a bug fix (when apparent), and the URL points to the commit in
 \gh:
 \begin{itemize}
 \item {\tt tabs to spaces formatting \underline{fix}es}.\\ {\small\sf\url{https://langstudy.page.link/gM7N}} 
@@ -915,17 +938,17 @@ false positives suggests the following six categories:
 \item {\it Substrings};
 \item {\it Non-functional:} meaning-preserving refactoring, e.g. changes to
   variable names;
-\item {\it Comments:} changes to comments, formatting, ...;
+\item {\it Comments:} changes to comments, formatting, etc.;
 \item {\it Feature:} feature enhancements;
-\item {\it Mismatch}: keywords used in unambiguous non-bug context
-  (e.g. ``this isn't a bug'');
+\item {\it Mismatch}: keywords used in an unambiguous non-bug context
+  (e.g., ``this isn't a bug'');
 \item {\it Hidden features:} new features with unclear commit messages.
 \end{enumerate}
 The original study clarified that its classification, which involved
 identifying bugfixes by only searching for error-related keywords came
 from~\cite{Mockus00}.  However, that work classified modification requests
 with an iterative, multi-step process, which differentiates between six
-different types of code changes by through multiple keywords. It is possible
+different types of code changes through multiple keywords. It is possible
 that this process was planned but not completed in the FSE publication.
 
 It is noteworthy that the above concerned are well known in the
@@ -974,20 +997,20 @@ Regression, when we simultaneously test 16 hypotheses of coefficients
 associated with 16 programming languages being 0~\cite{knnl}. Comparing 16
 independent p-values to a significance cutoff of, say, 0.05 in absence of
 the associations implies the family-wise error rate (\ie, the probability
-of at least one false positive association) FWER=$1-(1-0.05)^{16}=0.56$. The
+of at least one false positive association) FWER = $1-(1-0.05)^{16}=0.56$. The
 simplest approach to control FWER is the method of Bonferroni, which
 compares the p-values to the significance cutoff divided by the number of
 hypotheses. Therefore, with this approach, we viewed the parameters as
-``statistically significant" only if their p-values were below
+``statistically significant'' only if their p-values were below
 $0.01/16=.000625$.
 
 The FWER criterion is often viewed as overly conservative. An alternative
-criterion is False Discovery Rate (FDR), which allows an average
+criterion is the False Discovery Rate (FDR), which allows an average
 pre-specified proportion of false positives in the list of ``statistically
-significant" tests. For comparison, we also adjusted the p-values to control
+significant'' tests. For comparison, we also adjusted the p-values to control
 the FDR using the method of Benjamini and Hochberg~\cite{fdr}.  An adjusted
 p-value cutoff of, say, 0.05 implies an average 5\% of false positives in
-the ``statistically significant" list.
+the ``statistically significant'' list.
 
 As we will show next, for our dataset, both of these techniques agree in
 that they decrease the number of statistically significant associations
@@ -999,7 +1022,7 @@ adjust for multiple hypothesis testing).
 %-----------------------------------------------------------
 \subsubsection{Statistical significance versus practical significance}
 
-The FSE paper focused on statistical significance of the regression
+The FSE paper focused on the statistical significance of the regression
 coefficients.  This is quite narrow, in that the p-values are largely driven
 by the number of observations in the dataset~\cite{halsey}. Small p-values
 do not necessarily imply practically important
@@ -1020,8 +1043,8 @@ languages.
 \subsubsection{Accounting for uncertainty}
 
 The FSE analyses assumed that the counts of bug-fixing commits had no
-error. Yet, labeling of commits is subject to uncertainty, the heuristic
-used to label commits is has many false positives, which must be factored
+error. However, labeling of commits is subject to uncertainty: the heuristic
+used to label commits has many false positives, which must be factored
 into the results. A relatively simple approach to achieve this relies on
 parameter estimation by a statistical procedure called the
 bootstrap~\cite{knnl}. We implemented the bootstrap with the following three
@@ -1035,7 +1058,7 @@ resampled dataset was generated as the following random variable:
 \end{eqnarray*}}\vspace{-5mm}
 
 \noindent where FP=36\% and FN=11\% (Section~\ref{sec:methods:dataprocess}).
-Finally, we analyzed the resampled dataset with the Negative Binomial
+Finally, we analyzed the resampled dataset with Negative Binomial
 Regression. The three steps were repeated 100,000 times to create the
 histograms of estimates of each regression coefficients. Applying the
 Bonferroni correction, the parameter was viewed as statistically significant
@@ -1051,17 +1074,18 @@ column (b). Grey cells indicate disagreement with the conclusion of the
 original work. As can be seen, the p-values for \c, \objc, \js, \ts, \php,
 and \python all fall outside of the ``significant'' range of values, even
 without the multiplicity adjustment. Thus, 6 of the original 11 claims are
-discarded at this stage.  Column~(c) illustrate the impact of correction
+discarded at this stage.  Column~(c) illustrates the impact of correction
 for multiple hypothesis testing. Controlling the FDR increased the p-values
 slightly, but did not invalidate additional claims. However, FDR comes at
 the expense of more potential false positive associations. Using the
-Bonferroni adjustment, does not change the outcome.  In both cases, the
-p-value for one additional language, \ruby, lost its significance.
+Bonferroni adjustment does not change the outcome.  In both cases, the
+p-value for one additional language, \ruby, loses its significance.
 
 %-----------------------------------------------------------
 %-----------------------------------------------------------
 \begin{table*}[h]\begin{minipage}[t]{\textwidth}{\centering
-\caption{Negative Binomial Regression for Languages}
+\caption{Negative Binomial Regression for Languages (grey indicates
+  disagreement with the conclusion of the original work)}
 \renewcommand{\G}{\cellcolor{gray!25}}
 \input{../artifact/permutations/languages_table_reanalysis.tex}\label{langtable}}
 \end{minipage}\end{table*}
@@ -1084,7 +1108,7 @@ figure plot model-based predictions of the number of bug-fixing commits as
 function of commits for two extreme cases: \cpp (most bugs) commits) and
 \clojure (least bugs).  Age, size, and number of developers were fixed to
 the median values in the revised dataset. Fig.~\ref{prediction}(a) plots
-model-based confidence intervals of the {\it expected values}, \ie the
+model-based confidence intervals of the {\it expected values}, \ie, the
 estimated average numbers of bug-fixing commits in the underlying population
 of commits, on the log-log scale considered by the model. The differences
 between the averages were consistently small. Fig.~\ref{prediction}(b)
@@ -1113,7 +1137,7 @@ confidence and the intervals on the original scale and make the same point.
 
 The reanalysis failed to validate most of the claims of~\cite{ray14}.  As
 Table~\ref{langtable}(d-f) shows, the multiple steps of data cleaning and
-improved statistical modeling have invalidated the significance of 7 out of
+improved statistical modeling invalidated the significance of 7 out of
 11 languages. Even when the associations are statistically significant,
 their practical significance is small.
 
@@ -1122,7 +1146,7 @@ their practical significance is small.
 
 We now list several issues that may further endanger
 the validity of the causal conclusions of the original manuscript. We 
-have not controlled for their impact, we leave that to follow up work.
+have not controlled for their impact; we leave that to follow up work.
 
 \subsection{Regression Tests}
 Tests are relatively common in large projects. 
@@ -1142,7 +1166,7 @@ understand how to treat tests when analyzing large scale repositories.
 
 Given the inaccuracy of automated bug labeling techniques, it is quite
 possible that a significant portion of the bugs being analyzed are not
-bug at all. We have shown how to accommodate for that uncertainty, but
+bugs at all. We have shown how to accommodate for that uncertainty, but
 our correction assumed a somewhat uniform distribution of labeling
 errors across languages and projects.
 Of course, there is no guarantee that labeling errors have a uniform
@@ -1150,7 +1174,7 @@ distribution.  Error rates may be influenced by practices such as using a
 template for commits. For instance, if a project used the word \code{issue}
 in their commit template, then automated tools would classify all commits
 from that project as being bugs. To take a concrete example, consider the
-\code{Design\-Patterns\-PHP} project, it has 80\% false positives, while
+\code{Design\-Patterns\-PHP} project: it has 80\% false positives, while
 more structured projects such as \code{tengine} have only 10\% false
 positives. Often, the indicative factor was as mundane as the wording used
 in commit messages. The \code{gocode} project, the project with the most
@@ -1165,7 +1189,7 @@ would translate to 23 person-months to label the entire corpus.
 Using \gh stars to select projects is fraught with perils as the 18 variants
 of \code{bitcoin} included in the study attest.  Projects should be
 representative of the language they are written in.  The
-\code{PHP\-Design\-Patterns} is an educational compendium of code snippets,
+\code{PHP\-Design\-Patterns} is an educational compendium of code snippets;
 it is quite likely that is does represent actual \php code in the wild.  The
 \code{Definitely\-Typed} \ts project is a popular list of type signatures
 with no runnable code; it has bugs, but they are mistakes in the types
@@ -1182,7 +1206,7 @@ to curate them manually. Larger studies will need automated techniques.
 
 \gh public projects tend to be written by volunteers working in open source
 rather than by programmers working in industry. The work on many of these
-projects is likely to be done by individuals (or collections of individuals)
+projects is likely done by individuals (or collections of individuals)
 rather than by close knit teams. If this is the case, this may impact the
 likelihood of any commit being a bug fix. One could imagine commercial
 software being developed according to more rigorous software engineering
@@ -1217,7 +1241,7 @@ commits) in a project can be influenced by the project's culture, the age of
 commits, or the individual developers working on it.  Consider
 Fig.~\ref{age}, which shows that project ages are not uniformly distributed:
 some languages have been in widespread use longer than others.  The relation
-between age and its bug rate is subtle. It needs to be studied, and the age
+between age and its bug rate is subtle. It needs to be studied, and age
 should be factored into the selection of projects for inclusion in the
 study. Fig.~\ref{evolution} illustrates the evolution of the bug rate (with
 the original study's flawed notion of bugs) over time for 12 large projects
@@ -1243,22 +1267,25 @@ into account.
 \subsection{Relevance to the RQ} 
 The FSE paper argues that programming language features are, in part,
 responsible for bugs. Clearly, this only applies to a certain class of
-programming errors: those that rely on language features.  Bugs related to
-application logic or characteristics of the problem domain are less likely
-to be affected by the programming language. For example, setting the wrong
-TCP port on a network connection is not a language-related bug, whereas
-passing an argument of the wrong data type may be. It is eminently possible
-that the majority of bugs are in fact not affected by language features. To
-mitigate this threat, one would need to develop a new classification of
-bugs. It is unclear what attributes of a bug would be used for this purpose
-and quite unlikely that the process could be conducted without manual
-inspection of the source code.
+programming errors: those that rely on language features.  It is unclear if
+bugs related to application logic or characteristics of the problem domain
+are always affected by the programming language. For example, setting the
+wrong TCP port on a network connection is not a language-related bug, and no
+language feature will prevent that bug,whereas passing an argument of the
+wrong data type may be if the language has a static type system. It is
+eminently possible that some significant portion of bugs are in fact not
+affected by language features. To mitigate this threat, one would need to
+develop a new classification of bugs that distinguishes between bugs that
+may be related to the choice of language and those that are not. It is
+unclear what attributes of a bug would be used for this purpose and quite
+unlikely that the process could be conducted without manual inspection of
+the source code.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Best Practices}\label{best}
 
-The lessons from this work mirror challenges of reproducible data science.
+The lessons from this work mirror the challenges of reproducible data science.
 While these lessons are not novel, they may be worth repeating.  
 
 
@@ -1273,7 +1300,7 @@ side was a substantial effort (approximately 5 person-months).
 Data science pipelines are often complex: they use multiple languages, and
 perform sophisticated transformations of the data to eliminate invalid
 inputs and format the data for analysis. For instance, this paper relies on
-a combination of \js, {\sf\small R}, {\sf\small shell}, and {\sf\small
+a combination of {\small \js}, {\sf\small R}, {\sf\small shell}, and {\sf\small
   Makefiles}. The {\sf\small R} code contains over 130 transformation
 operations over the input table.  Such pipelines can contain subtle
 errors---one of the downsides of statistical languages is that they almost
@@ -1292,7 +1319,7 @@ inscrutable code has little value.
 \subsection{Apply domain knowledge} 
 Work in this space requires expertise in a number of disparate areas.
 Domain knowledge is critical when examining and understanding
-projects. Domain experts would have immediately taken issue with V8 and
+projects. Domain experts would have immediately taken issue with the misclassifications of V8 and
 bitcoin. Similarly, the classification of \scala as a purely functional
 language or of \objc as a manually managed language would have been red
 flags. Finally, given the subtleties of Git, researchers familiar with that
@@ -1326,10 +1353,10 @@ which in turn may fail for complicated reasons. A narrow focus on
 statistical significance can undermine results. These issues are well
 understood by the statistical community, and are summarized in a recent
 statement of the American Statistical Association~\cite{lazar}. The
-statement makes points such as ``{\it Scientific conclusions should not be
-  based only on whether a p-value passes a specific threshold}'' and ``{\it
+statement makes points such as {``\it Scientific conclusions should not be
+  based only on whether a p-value passes a specific threshold''} and {``\it
   A p-value, or statistical significance, does not measure the importance of
-  a result.}''  The underlying context, such as domain knowledge, data
+  a result.''}  The underlying context, such as domain knowledge, data
 quality, and the intended use of the results, are key for the validity of
 the results.
 
@@ -1359,9 +1386,9 @@ in the future, as well as to reviewers of such work.
 
 After data cleaning and a thorough reanalysis, we have shown that the
 conclusions of the FSE and CACM papers do not hold. It is not the case that
-eleven programming languages have statistically significant assoications
+eleven programming languages have statistically significant associations
 with bugs. An association can be observed for only four languages, and even
-then that association is exceedingly small. Moreover, we have identified
+then, that association is exceedingly small. Moreover, we have identified
 many uncontrolled sources of potential bias.  We emphasize that our results
 do not stem from a lack of data, but rather from the quality of the data at
 hand.
@@ -1376,17 +1403,16 @@ into the problems and solutions associated with such studies.
 
 \paragraph{Acknowledgments} 
 We thank Baishakhi Ray and Vladimir Filkov for sharing the data and code of
-their FSE paper, had they not preserved the original files and part of their
+their FSE paper; had they not preserved the original files and part of their
 code, reproduction would have been more challenging.  We thank Derek Jones,
 Shiram Krishnamurthi, Ryan Culppeper, Artem Pelenitsyn for helpful comments.
 We thank the members of the PRL lab in Boston and Prague for additional
 comments and encouragements. We thank the developers who kindly helped us
-label commit messages.  We thank the TOPLAS reviewers for their constructive
-comments and acknowledge the FSE'18 and ICSE'19 reviews.  This work received
+label commit messages.    This work received
 funding from the European Research Council under the European Union's
 Horizon 2020 research and innovation programme (grant agreement 695412), the
-NSF (award 1544542 and award 1518844), and the Czech Ministry of Education,
-Youth and Sports (grant agreement CZ.02.1.01/0.0/0.0/15\_003/0000421).
+NSF (awards 1518844, 1544542, and 1617892), and the Czech Ministry of Education,
+Youth and Sports (grant agreement CZ.02.1.01\/0.0\/0.0\/15\_003\/0000421).
                                                    
 \bibliographystyle{acmart/ACM-Reference-Format}\bibliography{main}
 \end{document}

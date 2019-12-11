@@ -499,8 +499,10 @@ juxtWeighted$pVal_bonf = bonfWeighted
 juxtWeighted = juxtWeighted %>% dplyr::select(-(ok))
 # add the columns
 juxtWeighted$ok = checkPValues(juxtWeighted, "FSE_pv", "pVal")
-juxtWeighted$ok_fdr = checkPValuesLevel(juxtWeighted, "FSE_pv", "pVal_fdr", 0.01)
-juxtWeighted$ok_bonf = checkPValuesLevel(juxtWeighted, "FSE_pv", "pVal_bonf", 0.01)
+#juxtWeighted$ok_fdr = checkPValuesLevel(juxtWeighted, "FSE_pv", "pVal_fdr", 0.01)
+#juxtWeighted$ok_bonf = checkPValuesLevel(juxtWeighted, "FSE_pv", "pVal_bonf", 0.01)
+juxtWeighted$ok_fdr = checkPValues(juxtWeighted, "FSE_pv", "pVal_fdr")
+juxtWeighted$ok_bonf = checkPValues(juxtWeighted, "FSE_pv", "pVal_bonf")
 juxtWeighted
 ```
 
@@ -522,8 +524,10 @@ juxtZeroSum$pVal_bonf = bonfZeroSum
 juxtZeroSum = juxtZeroSum %>% dplyr::select(-(ok))
 # add the columns
 juxtZeroSum$ok = checkPValues(juxtZeroSum, "FSE_pv", "pVal")
-juxtZeroSum$ok_fdr = checkPValuesLevel(juxtZeroSum, "FSE_pv", "pVal_fdr", 0.01)
-juxtZeroSum$ok_bonf = checkPValuesLevel(juxtZeroSum, "FSE_pv", "pVal_bonf", 0.01)
+#juxtZeroSum$ok_fdr = checkPValuesLevel(juxtZeroSum, "FSE_pv", "pVal_fdr", 0.01)
+#juxtZeroSum$ok_bonf = checkPValuesLevel(juxtZeroSum, "FSE_pv", "pVal_bonf", 0.01)
+juxtZeroSum$ok_fdr = checkPValues(juxtZeroSum, "FSE_pv", "pVal_fdr")
+juxtZeroSum$ok_bonf = checkPValues(juxtZeroSum, "FSE_pv", "pVal_bonf")
 juxtZeroSum
 ```
 

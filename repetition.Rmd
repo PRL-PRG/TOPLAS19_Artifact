@@ -455,7 +455,7 @@ First, let's drop Typescript, which now belongs to the `Other` category since we
 newSha$combined = newSha$combinedOriginal
 newSha$devs = newSha$committer
 X = summarizeByLanguage(newSha)
-Y = logTransform(X, log10, log)
+Y = logTransform(X, log, log)
 Y = Y %>% filter(combined != "Other")
 Y = droplevels(Y)
 ```
